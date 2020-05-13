@@ -1,6 +1,6 @@
-const jwt = require('jsonwebtoken'); 
+//const jwt = require('jsonwebtoken'); 
 const path = require('path');
-const Post = require('../models/post');
+const Post = require('../models/transaction');
 
 exports.getPosts = (req, res, next) => {
   const currentPage = req.query.page || 1;
@@ -29,7 +29,7 @@ exports.getPosts = (req, res, next) => {
       }
       next(err);
     });
-};
+}
 
 exports.createPost = (req, res, next) => {
   const post = new Post({
@@ -40,8 +40,8 @@ exports.createPost = (req, res, next) => {
     interact: {
       redirect: true,
       callback: {
-          uri: "",
-          nonce: ""
+          uri: "http://localhost:3000/Callback",
+          nonce: "VJLO6A4CAYLBXHTR0KRO"
       }
     },
     resourceRequest: {
@@ -108,40 +108,24 @@ exports.getPost = (req, res, next) => {
 };
 
 exports.getInteractUrl = (req, res, next) => {
-  jwt.verify(
-    req.token, 
-    'my_secret_key', 
-    function(err, data) {
-      if (err) {
-        res.sendStatus(403);
-      } else {
-        res.sendFile(path.join(__dirname,'/interactPage.html'));
-      }
-    }
-  )
+  res.sendFile(path.join(__dirname,'/interactPage.html'));
 };
 
-exports.createToken = (req, res, next) => {
-  // Add user 
-  const user = { id: 1 };
-  const token = jwt.sign(
-    {user}, 
-    'my_secret_key'
-  )
-  res.json({
-    token: token
-  })
-}
-
-exports.ensureToken = (req, res, next) => {
-  const bearerHeader = req.headers["authorization"];
-  if (typeof bearerHeader !== 'undefined') {
-    const bearer = bearerHeader.split(" ");
-    const bearerToken = bearer[1];
-    req.token = bearerToken;
-    next();
-  }else {
-    res.sendStatus(403);
+exports.createResponse = (req, res, next) => {
+  // Add Response 
+  const response = {
+    interaction_url : "http://localhost:8080/as/interact",
+    server_nonce : "MBDOFXG4Y5CVJCX821LH",
+    handle : {
+      value : "80UPRY5NM33OMUKMKSKU",
+      type : "bearer"
+    },
+    access_token: {
+      value: "OS9M2PMHKUR64TB8N6BW7OZB8CDFONP219RP1LT0",
+      type: "bearer"
+    }
   }
-}
-
+  res.json({
+    response: response
+  })
+};

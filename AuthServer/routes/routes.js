@@ -15,11 +15,8 @@ router.post(
 router.get('/post/:postId', authServerController.getPost);
 
 // Redirect user to AuthServer 
-router.get('/interact', 
-    authServerController.ensureToken, 
-    authServerController.getInteractUrl,
-    );
-// Create Token
-router.post('/token', authServerController.createToken);
+router.get('/interact', authServerController.getInteractUrl);
+// Create Response 
+router.post('/response', authServerController.createResponse);
 
 module.exports = router;
