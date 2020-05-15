@@ -7,9 +7,13 @@ class Post extends Component {
     super(props);
     this.state = {
       interaction_url : null,
-      redirection : false
     };
   }
+
+  componentDidMount () {
+    this.responseHandler();
+  }
+
   responseHandler = (props) => {
     let url = 'http://localhost:8080/as/response';
     let method = 'POST'
@@ -26,11 +30,6 @@ class Post extends Component {
       })
       this.interactHandler();
       console.log('Token :', this.state.access_token)
-      /*if (this.state.redirection) {
-        return(
-          <CallbackPage access_token= {this.state.access_token} />
-        )
-      }*/
     })
   }
 
@@ -63,13 +62,9 @@ class Post extends Component {
           </h3>
           <h3 className="post__title">Transaction Handle : </h3>
           <h3 className="post__title" >Interaction URL :
-            <button className="post__button"
-              onClick={this.responseHandler}
-            >Go to the AuthServe
-            </button> 
-            <dd className="post__url">
+            <span className="post__url">
               <a href={this.state.interaction_url}>{this.state.interaction_url}</a>
-            </dd>
+            </span>
           </h3>
         </header>
       </article>

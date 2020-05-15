@@ -28,22 +28,10 @@
   background-color: #3b0062;
   color: white;
 }
-.post__button {
-  margin-left: 30px;
-  font-weight: bold;
-  border: 1px solid #3b0062;
-}
-.post__button:hover {
-  cursor: pointer;
-  background: #3b0062;
-  color: white;
-  border: #ccc;
-}
 
-.post__url {
-  margin-left: 30px;
-  font-weight: bold;
-
+.post__url a {
+  background-color: white;
+  color: #3b0062;
 }
 
 @media (min-width: 768px) {

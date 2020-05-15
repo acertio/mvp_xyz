@@ -1,16 +1,21 @@
-//const jwt = require('jsonwebtoken'); 
-const path = require('path');
-const Post = require('../models/transaction');
+const txTransaction = require('../models/txTransaction');
+const utils = require('../utils/utils');
+const authServer = require('../controllers/authServer');
 
-exports.getPosts = (req, res, next) => {
+const sha3_512_encode = function (toHash) {
+  return base64url.fromBase64(Buffer.from(sha3_512(toHash), 'hex').toString('base64'));
+};
+
+// Get all Transactions 
+exports.getTransactions = (req, res, next) => {
   const currentPage = req.query.page || 1;
   const perPage = 2;
   let totalItems;
-  Post.find()
+  txTransaction.find()
     .countDocuments()
     .then(count => {
       totalItems = count;
-      return Post.find()
+      return txTransaction.find()
         .skip((currentPage - 1) * perPage)
         .limit(perPage);
     })
@@ -31,8 +36,9 @@ exports.getPosts = (req, res, next) => {
     });
 }
 
-exports.createPost = (req, res, next) => {
-  const post = new Post({
+// Create a Transaction 
+exports.createTransaction = (req, res, next) => {
+  const post = new txTransaction({
     display: {
       name: "XYZ Redirect Client",
       uri: ""
@@ -88,9 +94,10 @@ exports.createPost = (req, res, next) => {
     });
 };
 
-exports.getPost = (req, res, next) => {
-  const postId = req.params.postId;
-  Post.findById(postId)
+// Get a transaction by Id 
+exports.getTransaction = (req, res, next) => {
+  const transactionId = req.params.transactionId;
+  txTransaction.findById(transactionId)
     .then(post => {
       if (!post) {
         const error = new Error('Could not find post.');
@@ -107,21 +114,48 @@ exports.getPost = (req, res, next) => {
     });
 };
 
+// Function to get the CallbackUrl + hash + handle  
 exports.getInteractUrl = (req, res, next) => {
-  res.sendFile(path.join(__dirname,'/interactPage.html'));
+  i = "http://localhost:3000/callback"; // This is the Url that I want to modify 
+  res.writeHeader(200, {"Content-Type": "text/html"});  
+  res.write(
+    '<head>' + 
+      '<title>XYZ Auth Server </title>' + 
+      '<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">' + 
+    '</head>' + 
+    '<body>' + 
+      '<div>' + 
+          '<h2>XYZ Redirect Client</h2>' + 
+          '<h5>http://localhost:3000</h5>' + 
+          '<button type="button" class="btn btn-success">' + 
+              '<a id="CallbackUrl" href=' + i + '>Approve</a>' + 
+          '</button>' + 
+          '<button type="button" class="btn btn-secondary">Deny</button>' +
+      '</div>' +
+        /*'<script type="text/javascript"' + 
+          'src="interactPage.js">' + 
+        '</script>' +*/
+    '</body>' 
+  );  
+  res.end();  
+  //res.sendFile(path.join(__dirname+'/interactPage.html'));
 };
 
-exports.createResponse = (req, res, next) => {
+
+// Response to the Transaction 
+exports.createResponse = async (req, res, next) => {
   // Add Response 
+  const interaction_url_id = utils.generateRandomString(10);
+  const server_nonce = utils.generateRandomString(20);
   const response = {
-    interaction_url : "http://localhost:8080/as/interact",
-    server_nonce : "MBDOFXG4Y5CVJCX821LH",
+  interaction_url : "http://localhost:8080/as/interact/" + interaction_url_id,
+    server_nonce : server_nonce,
     handle : {
       value : "80UPRY5NM33OMUKMKSKU",
       type : "bearer"
     },
     access_token: {
-      value: "OS9M2PMHKUR64TB8N6BW7OZB8CDFONP219RP1LT0",
+      value: utils.generateRandomString(40),
       type: "bearer"
     }
   }

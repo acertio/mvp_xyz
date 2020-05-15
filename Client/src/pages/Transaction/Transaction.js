@@ -64,7 +64,7 @@ class Transaction extends Component {
     this.setState({
       editLoading: true
     });
-    let url = 'http://localhost:8080/as/post';
+    let url = 'http://localhost:8080/as/transaction';
     let method = 'POST'
     fetch(url, {
       method: method,

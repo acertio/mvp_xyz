@@ -4,18 +4,18 @@ const authServerController = require('../controllers/authServer');
 const router = express.Router();
 
 // GET /as
-router.get('/', authServerController.getPosts);
+router.get('/', authServerController.getTransactions);
 
 // POST /as/post
 router.post(
-    '/post', 
-    authServerController.createPost
+    '/transaction', 
+    authServerController.createTransaction
 );
 
-router.get('/post/:postId', authServerController.getPost);
+router.get('/transaction/:transactionId', authServerController.getTransaction);
 
 // Redirect user to AuthServer 
-router.get('/interact', authServerController.getInteractUrl);
+router.get('/interact/:id', authServerController.getInteractUrl);
 // Create Response 
 router.post('/response', authServerController.createResponse);
 
