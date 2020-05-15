@@ -1,6 +1,7 @@
 const txTransaction = require('../models/txTransaction');
 const utils = require('../utils/utils');
-const authServer = require('../controllers/authServer');
+const base64url = require('base64url');
+const { sha3_512 }  = require('js-sha3');
 
 const sha3_512_encode = function (toHash) {
   return base64url.fromBase64(Buffer.from(sha3_512(toHash), 'hex').toString('base64'));
@@ -116,7 +117,16 @@ exports.getTransaction = (req, res, next) => {
 
 // Function to get the CallbackUrl + hash + handle  
 exports.getInteractUrl = (req, res, next) => {
-  i = "http://localhost:3000/callback"; // This is the Url that I want to modify 
+  const interact_handle = utils.generateRandomString(30);
+  const client_nonce = "VJLO6A4CAYLBXHTR0KRO"; // We need to get it from the dataBase 
+  const server_nonce = utils.generateRandomString(20); // We need to get it 
+  const hash = sha3_512_encode(
+    [client_nonce, server_nonce, interact_handle].join('\n')
+  )
+  callback = "http://localhost:3000/callback"; // This is the Url that I want to modify 
+  const i =
+  callback + '?hash=' + hash + '&interact=' + interact_handle;
+
   res.writeHeader(200, {"Content-Type": "text/html"});  
   res.write(
     '<head>' + 
