@@ -14,3 +14,5 @@ The client is accessible at <http://localhost:3000>
 
 The AS is accessible at <http://localhost:8080/as>
 
+Acces Token allows you to get protected data. 
+Use GET request with Authorization to see data. 
