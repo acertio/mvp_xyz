@@ -10,6 +10,11 @@ const sha3_512_encode = function (toHash) {
   return base64url.fromBase64(Buffer.from(sha3_512(toHash), 'hex').toString('base64'));
 };
 
+const nonces = {
+  client_nonce: utils.generateRandomString(20),
+  server_nonce: utils.generateRandomString(20)
+}
+
 // Get all the Transactions 
 exports.getTransactions = (req, res, next) => {
   const currentPage = req.query.page || 1;
@@ -51,7 +56,7 @@ exports.createTransaction = (req, res, next) => {
       redirect: true,
       callback: {
           uri: "http://localhost:3000/Callback",
-          nonce: "VJLO6A4CAYLBXHTR0KRO"
+          nonce: nonces.client_nonce
       }
     },
     resourceRequest: {
@@ -138,8 +143,8 @@ exports.getTransaction = (req, res, next) => {
 // Function to get the CallbackUrl + hash + handle  
 exports.getInteractUrl = (req, res, next) => {
   const interact_handle = utils.generateRandomString(30);
-  const client_nonce = "VJLO6A4CAYLBXHTR0KRO"; // We need to get it from the dataBase 
-  const server_nonce = utils.generateRandomString(20); // We need to get it 
+  const client_nonce = nonces.client_nonce; // We need to get it from the dataBase 
+  const server_nonce = nonces.server_nonce; // We need to get it 
   //console.log("server_nonce", server_nonce)
   const hash = sha3_512_encode(
     [client_nonce, server_nonce, interact_handle].join('\n')
@@ -178,7 +183,7 @@ exports.createResponse = (req, res, next) => {
   // Add Response 
   const user = { name: "UserName"}
   const interaction_url_id = utils.generateRandomString(10);
-  const server_nonce = utils.generateRandomString(20);  // Save this in DB 
+  const server_nonce = nonces.server_nonce;  // Save this in DB 
   const response = {
   interaction_url : "http://localhost:8080/as/interact/" + interaction_url_id,
     server_nonce : server_nonce,
