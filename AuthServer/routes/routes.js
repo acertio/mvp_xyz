@@ -19,4 +19,10 @@ router.get('/interact/:id', authServerController.getInteractUrl);
 // Create Response 
 router.post('/response', authServerController.createResponse);
 
+// Protected resources 
+router.get('/data', 
+    authServerController.authenticateToken,
+    authServerController.getProtectedData
+)
+
 module.exports = router;

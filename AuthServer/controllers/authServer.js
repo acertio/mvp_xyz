@@ -1,13 +1,16 @@
+require('dotenv').config();
 const txTransaction = require('../models/txTransaction');
+const PendingTransaction = require('../models/pendingTransaction');
 const utils = require('../utils/utils');
 const base64url = require('base64url');
 const { sha3_512 }  = require('js-sha3');
+const jwt = require('jsonwebtoken');
 
 const sha3_512_encode = function (toHash) {
   return base64url.fromBase64(Buffer.from(sha3_512(toHash), 'hex').toString('base64'));
 };
 
-// Get all Transactions 
+// Get all the Transactions 
 exports.getTransactions = (req, res, next) => {
   const currentPage = req.query.page || 1;
   const perPage = 2;
@@ -93,8 +96,25 @@ exports.createTransaction = (req, res, next) => {
       }
       next(err);
     });
-};
+  /*const pendingTransaction = new PendingTransaction({
+    client_nonce: post.interact.callback.nonce
+    });
+    pendingTransaction
+      .save()
+      .then(result => {
+        res.status(201).json({
+          message: 'client_nonce created successfully!',
+          pendingTransaction: result,
+        });
+      })
+      .catch(err => {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      });*/
 
+}
 // Get a transaction by Id 
 exports.getTransaction = (req, res, next) => {
   const transactionId = req.params.transactionId;
@@ -120,10 +140,11 @@ exports.getInteractUrl = (req, res, next) => {
   const interact_handle = utils.generateRandomString(30);
   const client_nonce = "VJLO6A4CAYLBXHTR0KRO"; // We need to get it from the dataBase 
   const server_nonce = utils.generateRandomString(20); // We need to get it 
+  //console.log("server_nonce", server_nonce)
   const hash = sha3_512_encode(
     [client_nonce, server_nonce, interact_handle].join('\n')
   )
-  callback = "http://localhost:3000/callback"; // This is the Url that I want to modify 
+  callback = "http://localhost:3000/callback"; // This is the Url that I want to modify, we need to get it from DB 
   const i =
   callback + '?hash=' + hash + '&interact=' + interact_handle;
 
@@ -153,10 +174,11 @@ exports.getInteractUrl = (req, res, next) => {
 
 
 // Response to the Transaction 
-exports.createResponse = async (req, res, next) => {
+exports.createResponse = (req, res, next) => {
   // Add Response 
+  const user = { name: "UserName"}
   const interaction_url_id = utils.generateRandomString(10);
-  const server_nonce = utils.generateRandomString(20);
+  const server_nonce = utils.generateRandomString(20);  // Save this in DB 
   const response = {
   interaction_url : "http://localhost:8080/as/interact/" + interaction_url_id,
     server_nonce : server_nonce,
@@ -165,11 +187,57 @@ exports.createResponse = async (req, res, next) => {
       type : "bearer"
     },
     access_token: {
-      value: utils.generateRandomString(40),
+      value: jwt.sign(user, process.env.ACCESS_TOKEN_SECRET),
       type: "bearer"
     }
   }
   res.json({
     response: response
   })
+  /*PendingTransaction.collection.insertOne({
+    server_nonce: server_nonce
+  });*/
 };
+
+// Get protected resource 
+exports.getProtectedData = (req, res, next) => {
+  res.json({
+    message: 'This is Protected Data'
+  });
+}
+
+exports.authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization']
+  const token = authHeader && authHeader.split(' ')[1]
+  if (token == null) return res.sendStatus(401)
+
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+    if (err) return res.sendStatus(403)
+    req.user = user
+    next()
+  })
+}
+
+// Get pending Transaction flow details 
+
+/*exports.getPendingTransaction = (req, res, next) => {
+  const pendingTransaction =  txTransaction.find().select({
+    interact: 1
+  })
+  .then(post => {
+    if (!post) {
+      const error = new Error('Could not find post.');
+      error.statusCode = 404;
+      throw error;
+    }
+    res.status(200).json({ pendingTransaction: post });
+  })
+  .catch(err => {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  });
+  console.log(pendingTransaction)
+};*/
+

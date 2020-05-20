@@ -22,11 +22,11 @@
 }
 
 .post__title span {
-  margin-left: 30px;
   font-size: small;
   font-weight: bolder;
   background-color: #3b0062;
   color: white;
+  word-wrap: break-word;
 }
 
 .post__url a {

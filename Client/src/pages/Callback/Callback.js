@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 
 import '../../components/Post/Post.css';
+
 class CallbackPage extends Component {
   state = {
     access_token: null
@@ -34,9 +35,11 @@ class CallbackPage extends Component {
           </h3>
           <h3 className="post__title">
             Access Token : 
+            <dd>
               <span>
               {this.state.access_token}
               </span>
+              </dd>
           </h3>
           <h3 className="post__title" >Transaction Handle :</h3>
         </header>

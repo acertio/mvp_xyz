@@ -26,10 +26,8 @@ class Post extends Component {
       console.log('Response :', resultData.response);
       this.setState({
         interaction_url: resultData.response.interaction_url,
-        redirection : true
       })
       this.interactHandler();
-      console.log('Token :', this.state.access_token)
     })
   }
 
