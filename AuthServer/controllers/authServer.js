@@ -198,8 +198,8 @@ exports.createResponse = (req, res, next) => {
 };
 
 exports.createToken = (req, res, next) => {
-  //const interaction_url_id = interaction.interaction_url_id;
-  const interaction_url_id = "HHDKNFJFzemngmaemkanregk";
+  const interaction_url_id = interaction.interaction_url_id;
+  //const interaction_url_id = "HHDKNFJFzemngmaemkanregk";
 
   // Token 
   const user = { name: "UserName"}
