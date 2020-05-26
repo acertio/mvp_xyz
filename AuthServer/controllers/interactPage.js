@@ -13,7 +13,7 @@ const hash = sha3_512_encode(
 )
 const callback =  authServer.createTransaction.post.interact.callback.uri;
 const callbackUri =
-  callback + '?hash=' + hash + '&interact=' + interact_handle;*/
+  callback + '?hash=' + hash + '&interact=' + interact_handle;
 
 
 var CallbackUrl = document.getElementById("CallbackUrl");

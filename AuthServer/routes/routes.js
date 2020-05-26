@@ -19,10 +19,17 @@ router.get('/interact/:id', authServerController.getInteractUrl);
 // Create Response 
 router.post('/response', authServerController.createResponse);
 
+router.post('/token', authServerController.createToken)
+router.post('/hash', authServerController.createHandleHash);
 // Protected resources 
 router.get('/data', 
     authServerController.authenticateToken,
     authServerController.getProtectedData
 )
+
+// Transaction Continue 
+router.post('/txContinue', authServerController.transactionContinue);
+router.get('/txContinuePosts', authServerController.getTransactionContinue);
+
 
 module.exports = router;
