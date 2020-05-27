@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const postSchema = new Schema({
+const txTransactionSchema = new Schema({
     display : {
         type: Object,
         //required: true
@@ -33,4 +33,4 @@ const postSchema = new Schema({
 
 }, { timestamps: true });
 
-module.exports = mongoose.model('Transaction', postSchema);
+module.exports = mongoose.model('Transaction', txTransactionSchema);
