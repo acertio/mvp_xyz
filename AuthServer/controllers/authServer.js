@@ -1,6 +1,7 @@
 require('dotenv').config();
 const txTransaction = require('../models/txTransaction');
-const txContinuation = require('../models/txContinuation.js');
+const txContinuation = require('../models/txContinuation');
+const txResponse = require('../models/txResponse');
 const utils = require('../utils/utils');
 const base64url = require('base64url');
 const { sha3_512 }  = require('js-sha3');
@@ -8,16 +9,6 @@ const jwt = require('jsonwebtoken');
 
 const sha3_512_encode = function (toHash) {
   return base64url.fromBase64(Buffer.from(sha3_512(toHash), 'hex').toString('base64'));
-};
-
-const nonces = {
-  client_nonce: utils.generateRandomString(20),
-  server_nonce: utils.generateRandomString(20)
-};
-
-const interaction = {
-  interact_handle: utils.generateRandomString(30),
-  interaction_url_id: utils.generateRandomString(20)
 };
 
 // Get all the Transactions 
@@ -61,7 +52,7 @@ exports.createTransaction = (req, res, next) => {
       redirect: true,
       callback: {
           uri: "http://localhost:3000/Callback",
-          nonce: nonces.client_nonce
+          nonce: ""
       }
     },
     resourceRequest: {
@@ -107,6 +98,7 @@ exports.createTransaction = (req, res, next) => {
       next(err);
     });
 }
+
 // Get a transaction by Id 
 exports.getTransaction = (req, res, next) => {
   const transactionId = req.params.transactionId;
@@ -129,59 +121,77 @@ exports.getTransaction = (req, res, next) => {
 
 // Function to get the CallbackUrl + hash + handle  
 exports.getInteractUrl = (req, res, next) => {
-  const interact_handle = interaction.interact_handle;
-  const client_nonce = nonces.client_nonce; // We need to get it from the dataBase 
-  const server_nonce = nonces.server_nonce; // We need to get it 
-  const hash = sha3_512_encode(
-    [client_nonce, server_nonce, interact_handle].join('\n')
-  )
-  const callback = "http://localhost:3000/callback"; // This is the Url that I want to modify, we need to get it from DB 
-  const i =
-  callback + '?hash=' + hash + '&interact=' + interact_handle;
+  // Get interact_handle + client_nonce + server_nonce from the DataBase 
+  txResponse.find({}, {
+    _id : 0,
+    interact_handle: 1,
+    client_nonce: 1,
+    server_nonce: 1
+  })
+    .then(data => {
+      interact_handle = data[data.length - 1].interact_handle,
+      client_nonce = data[data.length - 1].client_nonce,
+      server_nonce = data[data.length - 1].server_nonce
+      const hash = sha3_512_encode(
+        [client_nonce, server_nonce, interact_handle].join('\n')
+      )
+      const callback = "http://localhost:3000/callback"; // This is the Url that I want to modify, we need to get it from DB 
+      const i =
+      callback + '?hash=' + hash + '&interact=' + interact_handle;
 
-  res.writeHeader(200, {"Content-Type": "text/html"});  
-  res.write(
-    '<head>' + 
-      '<title>XYZ Auth Server </title>' + 
-      '<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">' + 
-    '</head>' + 
-    '<body>' + 
-      '<div>' + 
-          '<h2>XYZ Redirect Client</h2>' + 
-          '<h5>http://localhost:3000</h5>' + 
-          '<button type="button" class="btn btn-success">' + 
-              '<a id="CallbackUrl" href=' + i + '>Approve</a>' + 
-          '</button>' + 
-          '<button type="button" class="btn btn-secondary">Deny</button>' +
-      '</div>' +
-        /*'<script type="text/javascript"' + 
-          'src="interactPage.js">' + 
-        '</script>' +*/
-    '</body>' 
-  ); 
-  res.end();  
-  //res.sendFile(path.join(__dirname+'/interactPage.html'));
+      res.writeHeader(200, {"Content-Type": "text/html"});  
+      res.write(
+        '<head>' + 
+          '<title>XYZ Auth Server </title>' + 
+          '<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">' + 
+        '</head>' + 
+        '<body>' + 
+          '<div>' + 
+              '<h2>XYZ Redirect Client</h2>' + 
+              '<h5>http://localhost:3000</h5>' + 
+              '<button type="button" class="btn btn-success">' + 
+                  '<a id="CallbackUrl" href=' + i + '>Approve</a>' + 
+              '</button>' + 
+              '<button type="button" class="btn btn-secondary">Deny</button>' +
+          '</div>' +
+            /*'<script type="text/javascript"' + 
+              'src="interactPage.js">' + 
+            '</script>' +*/
+        '</body>' 
+      );
+      res.end();
+      //res.sendFile(path.join(__dirname+'/interactPage.html'));
+    })
 };
 
 exports.createHandleHash = (req, res, next) => {
-  const interact_handle = interaction.interact_handle;
-  const client_nonce = nonces.client_nonce; // We need to get it from the dataBase 
-  const server_nonce = nonces.server_nonce; // We need to get it 
-  const hash = sha3_512_encode(
-    [client_nonce, server_nonce, interact_handle].join('\n')
-  )
-  res.json({
-    hash: hash
+  txResponse.find({}, {
+    _id : 0,
+    interact_handle: 1,
+    client_nonce: 1,
+    server_nonce: 1
   })
+    .then(data => {
+      interact_handle = data[data.length - 1].interact_handle,
+      client_nonce = data[data.length - 1].client_nonce,
+      server_nonce = data[data.length - 1].server_nonce
+      const hash = sha3_512_encode(
+        [client_nonce, server_nonce, interact_handle].join('\n')
+      )
+      res.json({
+        hash: hash
+      })
+    })
 }
+
 // Response to the Transaction 
 exports.createResponse = (req, res, next) => {
   // Add Response 
-  const interaction_url_id = interaction.interaction_url_id;
-  const interact_handle = interaction.interact_handle;
-  const server_nonce = nonces.server_nonce; // Save this in DB 
-  const client_nonce = nonces.client_nonce;  // Save this in DB 
-  const response = {
+  const interaction_url_id = utils.generateRandomString(20); // Save in DB
+  const interact_handle = utils.generateRandomString(30); // Save in DB 
+  const server_nonce = utils.generateRandomString(20); // Save in DB 
+  const client_nonce = utils.generateRandomString(20);  // Save in DB 
+  const response = new txResponse({
     interaction_url : "http://localhost:8080/as/interact/"  + interaction_url_id,
     server_nonce : server_nonce,
     client_nonce : client_nonce,
@@ -191,43 +201,80 @@ exports.createResponse = (req, res, next) => {
       value : "80UPRY5NM33OMUKMKSKU",
       type : "bearer"
     },
-  }
-  res.json({
-    response: response
+  });
+  response
+  .save()
+  .then(result => {
+    res.status(201).json({
+      message: 'Response sent successfully!',
+      response: result,
+    });
   })
+  .catch(err => {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  });
 };
 
-exports.createToken = (req, res, next) => {
-  const interaction_url_id = interaction.interaction_url_id;
-  //const interaction_url_id = "HHDKNFJFzemngmaemkanregk";
-
-  // Token 
-  const user = { name: "UserName"}
-  const token = {
-    access_token: {
-      value: jwt.sign(user, process.env.ACCESS_TOKEN_SECRET),
-      type: "bearer"
-    }
-  }
-  // Get interact_ref from DB 
-  txContinuation.find({}, {
-    _id : 0,
-    interact_ref: 1
-  })
-    .then((data) => {
-      interact_ref = data[0].interact_ref
-      console.log('interact_ref', interact_ref)
-      console.log('interaction_url_id', interaction_url_id)
-      if (interaction_url_id == interact_ref) {
-        console.log(true)
-        res.json({
-          token: token
+// GET the Response 
+exports.getResponse = (req, res, next) => {
+  txResponse.find()
+    .then(txResponse => {
+      res
+        .status(200)
+        .json({ 
+          message: 'txReponse Posts', 
+          txResponsePosts: txResponse
         });
-      } else {
-        console.log(false)
-        res.sendStatus(404);
+    })
+    .catch(err => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
       }
+      next(err);
     });
+}
+
+// Create Token 
+exports.createToken = (req, res, next) => {
+  txResponse.find({}, {
+    _id : 0,
+    interaction_url_id: 1,
+  }).sort({_id:-1}).limit(1)
+    .then(data => {
+      interaction_url_id = data[data.length - 1].interaction_url_id
+      //interaction_url_id = "HHDKNFJFzemngmaemkanregk";
+
+      // Create Token 
+      const user = { name: "UserName"}
+      const token = {
+        access_token: {
+          value: jwt.sign(user, process.env.ACCESS_TOKEN_SECRET),
+          type: "bearer"
+        }
+      }
+      // Get interact_ref from DB 
+      txContinuation.find({}, {
+        _id : 0,
+        interact_ref: 1
+      }).sort({_id:-1}).limit(1)
+      .then((data) => {
+        interact_ref = data[data.length - 1].interact_ref
+        console.log('interact_ref', interact_ref)
+        console.log('interaction_url_id', interaction_url_id)
+        if (interaction_url_id == interact_ref) {
+          console.log(true)
+          res.json({
+            token: token
+          });
+        } else {
+          console.log(false)
+          res.sendStatus(404);
+        }
+      });
+    })
 };
 
 // Get protected resource 
@@ -283,5 +330,4 @@ exports.getTransactionContinue = (req, res, next) => {
       next(err);
     });
 }
-
 

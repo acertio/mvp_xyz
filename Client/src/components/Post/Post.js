@@ -11,46 +11,25 @@ class Post extends Component {
   }
 
   componentDidMount () {
-    this.responseHandler();
+    this.interactionURLHandler();
   }
 
-  responseHandler = (props) => {
-    let url = 'http://localhost:8080/as/response';
-    let method = 'POST'
-    fetch(url, {
-      method: method,
-    }).then(response => {
-      return response.json()
-      // Use the data
-    }).then(resultData => {
-      console.log('Response :', resultData.response);
-      this.setState({
-        interaction_url: resultData.response.interaction_url,
-      })
-      this.interactHandler();
-    })
-  }
-
-  interactHandler = () => {
-    let url = this.state.interaction_url;
+  interactionURLHandler = () => {
+    let url = 'http://localhost:8080/as/responsePosts';
     let method = 'GET'
     fetch(url, {
       method: method,
-      /*headers: {
-        Authorization: 'Bearer ' + this.state.token
-      },*/
-      // Transform Data 
     }).then(response => {
-      //console.log('response', response)
-      return response.text()
+      console.log('response', response)
+      return response.json()
       // Use the data
-    }).then(function (html) {
-      var parser = new DOMParser();
-      //console.log('parser',parser)
-      var doc = parser.parseFromString(html, "text/html");
-      console.log(doc)
+    }).then(resultData => {
+      this.setState({
+        interaction_url : resultData.txResponsePosts[resultData.txResponsePosts.length - 1].interaction_url
+      })
     })
   }
+
   render () {
     return (
       <article className="post">

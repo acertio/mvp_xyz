@@ -18,8 +18,11 @@ router.get('/transaction/:transactionId', authServerController.getTransaction);
 router.get('/interact/:id', authServerController.getInteractUrl);
 // Create Response 
 router.post('/response', authServerController.createResponse);
+// Get Response Posts 
+router.get('/responsePosts', authServerController.getResponse);
 
-router.post('/token', authServerController.createToken)
+// Create Token 
+router.post('/token', authServerController.createToken);
 router.post('/hash', authServerController.createHandleHash);
 // Protected resources 
 router.get('/data', 
@@ -30,6 +33,4 @@ router.get('/data',
 // Transaction Continue 
 router.post('/txContinue', authServerController.transactionContinue);
 router.get('/txContinuePosts', authServerController.getTransactionContinue);
-
-
 module.exports = router;

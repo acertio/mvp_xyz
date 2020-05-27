@@ -151,6 +151,19 @@ class Transaction extends Component {
       });
   };
 
+  responseHandler = () => {
+    let url = 'http://localhost:8080/as/response';
+    let method = 'POST'
+    fetch(url, {
+      method: method,
+    }).then(response => {
+      return response.json()
+      // Use the data
+    }).then(resultData => {
+      console.log('Response :', resultData.response);
+    })
+  }
+
   errorHandler = () => {
     this.setState({ error: null });
   };
@@ -163,7 +176,10 @@ class Transaction extends Component {
     return (
       <Fragment>
         <section className="feed__control">
-          <Button mode="raised" design="accent" onClick={this.finishEditHandler}>
+          <Button mode="raised" design="accent" onClick={ () => {
+            this.finishEditHandler(); 
+            this.responseHandler()
+          }}>
             New Transaction
           </Button>
         </section>

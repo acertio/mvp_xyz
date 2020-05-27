@@ -26,21 +26,23 @@ class CallbackPage extends Component {
   }
 
   responseHandler = () => {
-    let url = 'http://localhost:8080/as/response';
-    let method = 'POST'
+    let url = 'http://localhost:8080/as/responsePosts';
+    let method = 'GET'
     fetch(url, {
       method: method,
     }).then(response => {
+      console.log('response', response)
       return response.json()
       // Use the data
     }).then(resultData => {
-      //console.log('Token :', resultData.response.access_token);
+      //console.log('resultDataLength', resultData.txResponsePosts.length)
       this.setState({
-        server_nonce : resultData.response.server_nonce,
-        client_nonce: resultData.response.client_nonce,
-        interact_Callback : resultData.response.interact_handle,
-        interaction_url_id : resultData.response.interaction_url_id
+        server_nonce : resultData.txResponsePosts[resultData.txResponsePosts.length - 1].server_nonce,
+        client_nonce: resultData.txResponsePosts[resultData.txResponsePosts.length - 1].client_nonce,
+        interact_Callback : resultData.txResponsePosts[resultData.txResponsePosts.length - 1].interact_handle,
+        interaction_url_id : resultData.txResponsePosts[resultData.txResponsePosts.length - 1].interaction_url_id
       })
+      console.log(this.state.interaction_url_id)
       this.txContinuehandler();
     })
   }
@@ -60,6 +62,7 @@ class CallbackPage extends Component {
       console.log('access_token', this.state.access_token)
     })
   }
+
   hashHandler = () => {
     let url = 'http://localhost:8080/as/hash';
     let method = 'POST'
