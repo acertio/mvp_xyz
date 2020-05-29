@@ -60,7 +60,7 @@ class Transaction extends Component {
       .catch(this.catchError);
   };
 
-  finishEditHandler = postData => {
+  finishEditHandler = () => {
     this.setState({
       editLoading: true
     });
@@ -68,9 +68,48 @@ class Transaction extends Component {
     let method = 'POST'
     fetch(url, {
       method: method,
-      /*headers: {
-        Authorization: 'Bearer ' + this.props.token
-      }*/
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        display: {
+          name: "XYZ Redirect Client",
+          uri: ""
+        },
+        interact: {
+          redirect: true,
+          callback: {
+              uri: "http://localhost:3000/Callback",
+              nonce: ""
+          }
+        },
+        resourceRequest: {
+          action : [],
+          locations : [],
+          data : []
+        },
+        claimsRequest: {
+          subject: "02F861EA250FE40BB393AAF978C6E2A4",
+          email: "user@example.com"
+        },
+        user: {
+          handle: "",
+          assertion: ""
+        },
+        keys: {
+          proof : "OAUTHPOP",
+          jwk : {
+              keys: 
+                  {
+                      kty:"RSA",
+                      e:"AQAB",
+                      kid:"xyz-client",
+                      alg:"RS256",
+                      n:"zwCT_3bx-glbbHrheYpYpRWiY9I-nEaMRpZnRrIjCs6b_emyTkBkDDEjSysi38OC73hj1-WgxcPdKNGZyIoH3QZen1MKyyhQpLJG1-oLNLqm7pXXtdYzSdC9O3-oiyy8ykO4YUyNZrRRfPcihdQCbO_OC8Qugmg9rgNDOSqppdaNeas1ov9PxYvxqrz1-8Ha7gkD00YECXHaB05uMaUadHq-O_WIvYXicg6I5j6S44VNU65VBwu-AlynTxQdMAWP3bYxVVy6p3-7eTJokvjYTFqgDVDZ8lUXbr5yCTnRhnhJgvf3VjD_malNe8-tOqK5OSDlHTy6gD9NqdGCm-Pm3Q"
+                  } 
+          }
+        }
+      })
     })      
     .then(res => {
       if (res.status !== 200 && res.status !== 201) {
@@ -80,49 +119,48 @@ class Transaction extends Component {
       })
       .then(resData => {
         console.log('resData', resData);
-        const post = {
-          _id: resData.post._id,
+        const txtransaction = {
+          _id: resData.txtransaction._id,
           display: {
-            name: resData.post.display.name,
-            uri: resData.post.display.uri
+            name: resData.txtransaction.display.name,
+            uri: resData.txtransaction.display.uri
           },
           interact: {
-            redirect: resData.post.interact.redirect,
+            redirect: resData.txtransaction.interact.redirect,
             callback: {
-                uri: resData.post.interact.callback.uri,
-                nonce: resData.post.interact.callback.nonce
+                uri: resData.txtransaction.interact.callback.uri,
+                nonce: resData.txtransaction.interact.callback.nonce
             }
           },	
           resourceRequest: {
-            action : resData.post.resourceRequest.action,
-            locations : resData.post.resourceRequest.locations,
-            data : resData.post.resourceRequest.data
+            action : resData.txtransaction.resourceRequest.action,
+            locations : resData.txtransaction.resourceRequest.locations,
+            data : resData.txtransaction.resourceRequest.data
           },
           claimsRequest: {
-            subject: resData.post.claimsRequest.subject,
-            email: resData.post.claimsRequest.email
+            subject: resData.txtransaction.claimsRequest.subject,
+            email: resData.txtransaction.claimsRequest.email
           },
           user: {
-            handle: resData.post.user.handle,
-            assertion: resData.post.user.assertion
+            handle: resData.txtransaction.user.handle,
+            assertion: resData.txtransaction.user.assertion
           },
           keys: {
-            proof : resData.post.keys.proof,
+            proof : resData.txtransaction.keys.proof,
             jwk : {
                 keys: [ 
                     {
-                        kty:resData.post.keys.jwk.keys.kty,
-                        e:resData.post.keys.jwk.keys.e,
-                        kid:resData.post.keys.jwk.keys.kid,
-                        alg:resData.post.keys.jwk.keys.alg,
-                        n:resData.post.keys.jwk.keys.n
+                        kty:resData.txtransaction.keys.jwk.keys.kty,
+                        e:resData.txtransaction.keys.jwk.keys.e,
+                        kid:resData.txtransaction.keys.jwk.keys.kid,
+                        alg:resData.txtransaction.keys.jwk.keys.alg,
+                        n:resData.txtransaction.keys.jwk.keys.n
                     }	 
                 ]
             }
           },
-          createdAt: resData.post.createdAt
+          createdAt: resData.txtransaction.createdAt
         };
-        //console.log('post :', post)
         this.setState(prevState => {
           let updatedPosts = [...prevState.posts];
           if (prevState.editPost) {
@@ -130,9 +168,9 @@ class Transaction extends Component {
               p => p._id === prevState.editPost._id,
             );
             //console.log('postIndex', postIndex)
-            updatedPosts[postIndex] = post;
+            updatedPosts[postIndex] = txtransaction;
           } else if (prevState.posts.length < 5) {
-            updatedPosts = prevState.posts.concat(post);
+            updatedPosts = prevState.posts.concat(txtransaction);
           }
           return {
             posts: updatedPosts,

@@ -5,24 +5,26 @@ import { sha3_512 } from 'js-sha3';
 import '../../components/Post/Post.css';
 
 class CallbackPage extends Component {
-  state = {
-    access_token: null,
-    client_nonce: null, 
-    server_nonce: null,
-    interact_Callback: null,
-    interaction_url_id: null,
-    hash: null
+  constructor(props) {
+    super(props)
+    this.state = {
+      access_token: null,
+      client_nonce: null, 
+      server_nonce: null,
+      interact_Callback: null,
+      handle: null,
+      hash: null
+    }
+    this.responseHandler();
+    this.hashHandler();
   }
 
   sha3_512_encode = (toHash) => {
     return base64url.fromBase64(Buffer.from(sha3_512(toHash), 'hex').toString('base64'));
   };
 
-  componentDidMount () {
-    this.hashHandler();
-    this.responseHandler();
+  componentDidMount() {
     this.tokenHandler();
-    //this.txContinuehandler();
   }
 
   responseHandler = () => {
@@ -39,10 +41,9 @@ class CallbackPage extends Component {
       this.setState({
         server_nonce : resultData.txResponsePosts[resultData.txResponsePosts.length - 1].server_nonce,
         client_nonce: resultData.txResponsePosts[resultData.txResponsePosts.length - 1].client_nonce,
+        handle: resultData.txResponsePosts[resultData.txResponsePosts.length - 1].handle.value,
         interact_Callback : resultData.txResponsePosts[resultData.txResponsePosts.length - 1].interact_handle,
-        interaction_url_id : resultData.txResponsePosts[resultData.txResponsePosts.length - 1].interaction_url_id
       })
-      console.log(this.state.interaction_url_id)
       this.txContinuehandler();
     })
   }
@@ -59,7 +60,6 @@ class CallbackPage extends Component {
       this.setState({
         access_token: resultData.token.access_token.value
       })
-      console.log('access_token', this.state.access_token)
     })
   }
 
@@ -86,8 +86,8 @@ class CallbackPage extends Component {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        handle: '80UPRY5NM33OMUKMKSKU',
-        interact_ref: this.state.interaction_url_id
+        handle: this.state.handle,
+        interact_ref: this.state.interact_Callback
       })
     }).then(data => {
       return data.json()
@@ -95,31 +95,31 @@ class CallbackPage extends Component {
       console.log(resultData);
     })
   }
-
+  
   render () {
     const expected_hash = this.sha3_512_encode(
       [this.state.client_nonce, this.state.server_nonce, this.state.interact_Callback].join('\n')
     )
     //const expected_hash = "aff9b0886e41efcea643033195422b38258e1ae700b3544a33c59d27ec5a9d80dab1017f2f88ba93491d5ac4ad681f27a80811cf2c889c23e1e643ededb830a2"
     if (expected_hash === this.state.hash) {
-    return (
-      <article className="post">
-        <header className="post__header">
-          <h3 className="post__meta">
-            Posted on {this.props.date}
-          </h3>
-          <h3 className="post__title">
-            Access Token : 
-            <dd>
-              <span>
-              {this.state.access_token}
-              </span>
-              </dd>
-          </h3>
-          <h3 className="post__title" >Transaction Handle :</h3>
-        </header>
-      </article>
-    )
+      return (
+        <article className="post">
+          <header className="post__header">
+            <h3 className="post__meta">
+              Posted on {this.props.date}
+            </h3>
+            <h3 className="post__title">
+              Access Token : 
+              <dd>
+                <span>
+                {this.state.access_token}
+                </span>
+                </dd>
+            </h3>
+            <h3 className="post__title" >Transaction Handle :</h3>
+          </header>
+        </article>
+      )
     } else {
       return (
         <header>

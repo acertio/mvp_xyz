@@ -18,7 +18,7 @@ The AS is accessible at <http://localhost:8080/as>
 
 Acces Token allows you to get protected data. Use GET request with Authorization to see it. Or, 
 
-`curl -H "Authorization: Bearer <token to copy>" http://localhost:8080/data`
+`curl -H "Authorization: Bearer <token to copy>" http://localhost:8080/as/data`
 
 # Redirect with Callback
 The client needs to parse the `hash` parameter and compare its value to a hash calculated by its originally chosen `nonce` value, the server's returned `server_nonce`value from the original transaction request, and the value of the `interact`reference parameter from the callback request, hashed using the client's chosen method from the initial transaction request (which defaults to `SHA3`512 bit hash). If these hash values don't match the client returns an error to the user and stops the transaction.

@@ -43,52 +43,53 @@ exports.getTransactions = (req, res, next) => {
 
 // Create a Transaction 
 exports.createTransaction = (req, res, next) => {
-  const post = new txTransaction({
+  const txtransaction = new txTransaction({
     display: {
-      name: "XYZ Redirect Client",
-      uri: ""
+      name: req.body.display.name,
+      uri: req.body.display.uri
     },
     interact: {
-      redirect: true,
+      redirect: req.body.interact.redirect,
       callback: {
-          uri: "http://localhost:3000/Callback",
-          nonce: ""
+          uri: req.body.interact.callback.uri,
+          nonce: req.body.interact.callback.nonce
       }
     },
     resourceRequest: {
-      action : [],
-      locations : [],
-      data : []
+      action : req.body.resourceRequest.action,
+      locations : req.body.resourceRequest.locations,
+      data : req.body.resourceRequest.data
     },
     claimsRequest: {
-      subject: "02F861EA250FE40BB393AAF978C6E2A4",
-      email: "user@example.com"
+      subject: req.body.claimsRequest.subject,
+      email: req.body.claimsRequest.email
     },
     user: {
-      handle: "",
-      assertion: ""
+      handle: req.body.user.handle,
+      assertion: req.body.user.assertion
     },
     keys: {
-      proof : "OAUTHPOP",
+      proof : req.body.keys.proof,
       jwk : {
           keys: [ 
               {
-                  kty:"RSA",
-                  e:"AQAB",
-                  kid:"xyz-client",
-                  alg:"RS256",
-                  n:"zwCT_3bx-glbbHrheYpYpRWiY9I-nEaMRpZnRrIjCs6b_emyTkBkDDEjSysi38OC73hj1-WgxcPdKNGZyIoH3QZen1MKyyhQpLJG1-oLNLqm7pXXtdYzSdC9O3-oiyy8ykO4YUyNZrRRfPcihdQCbO_OC8Qugmg9rgNDOSqppdaNeas1ov9PxYvxqrz1-8Ha7gkD00YECXHaB05uMaUadHq-O_WIvYXicg6I5j6S44VNU65VBwu-AlynTxQdMAWP3bYxVVy6p3-7eTJokvjYTFqgDVDZ8lUXbr5yCTnRhnhJgvf3VjD_malNe8-tOqK5OSDlHTy6gD9NqdGCm-Pm3Q"
+                  kty: req.body.keys.jwk.keys.kty,
+                  e: req.body.keys.jwk.keys.e,
+                  kid: req.body.keys.jwk.keys.kid,
+                  alg: req.body.keys.jwk.keys.alg,
+                  n: req.body.keys.jwk.keys.n
               } 
           ]
       },
     }
   });
-  post
+
+  txtransaction
     .save()
-    .then(result => {
+    .then(data => {
       res.status(201).json({
-        message: 'Post created successfully!',
-        post: result,
+        message: 'txtransaction created successfully!',
+        txtransaction: data,
       });
     })
     .catch(err => {
@@ -198,7 +199,7 @@ exports.createResponse = (req, res, next) => {
     interact_handle : interact_handle,
     interaction_url_id : interaction_url_id,
     handle : {
-      value : "80UPRY5NM33OMUKMKSKU",
+      value : utils.generateRandomString(20),
       type : "bearer"
     },
   });
@@ -237,34 +238,76 @@ exports.getResponse = (req, res, next) => {
     });
 }
 
+exports.transactionContinue = (req, res, next) => {
+  const txContinue = new txContinuation({
+    handle: req.body.handle,
+    interact_ref: req.body.interact_ref
+  });
+
+  txContinue.save()
+    .then(data => {
+      res.json(data);
+    })
+    .catch(err => {
+      res.json({
+        message: err
+      })
+    })
+}
+
+exports.getTransactionContinue = (req, res, next) => {
+   txContinuation.find()
+    .then(txContinue => {
+      res
+        .status(200)
+        .json({ 
+          message: 'txContinue Posts', 
+          txContinuePosts: txContinue
+        });
+    })
+    .catch(err => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+}
+
 // Create Token 
 exports.createToken = (req, res, next) => {
+  // Create Token 
+  const user = { name: "UserName"}
+  const token = {
+    access_token: {
+      value: jwt.sign(user, process.env.ACCESS_TOKEN_SECRET),
+      type: "bearer"
+    }
+  }
+  // Get interact_ref from DB 
   txResponse.find({}, {
     _id : 0,
-    interaction_url_id: 1,
-  }).sort({_id:-1}).limit(1)
-    .then(data => {
-      interaction_url_id = data[data.length - 1].interaction_url_id
-      //interaction_url_id = "HHDKNFJFzemngmaemkanregk";
-
-      // Create Token 
-      const user = { name: "UserName"}
-      const token = {
-        access_token: {
-          value: jwt.sign(user, process.env.ACCESS_TOKEN_SECRET),
-          type: "bearer"
-        }
-      }
-      // Get interact_ref from DB 
-      txContinuation.find({}, {
-        _id : 0,
-        interact_ref: 1
-      }).sort({_id:-1}).limit(1)
+    interact_handle: 1,
+    handle: 1
+  })
+    .then(result => {
+      console.log('txResponse', result)
+      handle_server = result[result.length - 1].handle.value
+      interact_handle = result[result.length - 1].interact_handle
+    // Get interact_handle from DB  + handle_server
+    txContinuation.find({}, {
+      _id : 0,
+      interact_ref: 1,
+      handle: 1
+    })
       .then((data) => {
+        console.log('txContinuation', data)
         interact_ref = data[data.length - 1].interact_ref
+        handle_client = data[data.length - 1].handle
         console.log('interact_ref', interact_ref)
-        console.log('interaction_url_id', interaction_url_id)
-        if (interaction_url_id == interact_ref) {
+        console.log('interact_handle', interact_handle)
+        console.log ('handle_client', handle_client)
+        console.log('handle_server', handle_server)
+        if (interact_handle == interact_ref && handle_server == handle_client ) {
           console.log(true)
           res.json({
             token: token
@@ -273,8 +316,14 @@ exports.createToken = (req, res, next) => {
           console.log(false)
           res.sendStatus(404);
         }
-      });
-    })
+      })
+      })
+      .catch(err => {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      })
 };
 
 // Get protected resource 
@@ -295,39 +344,3 @@ exports.authenticateToken = (req, res, next) => {
     next()
   })
 }
-
-exports.transactionContinue = (req, res, next) => {
-  const txContinue = new txContinuation({
-    handle: req.body.handle,
-    interact_ref: req.body.interact_ref
-  });
-
-  txContinue.save()
-    .then(data => {
-      res.json(data);
-    })
-    .catch(err => {
-      res.json({
-        message: err
-      })
-    })
-}
-
-exports.getTransactionContinue = (req, res, next) => {
-  txContinuation.find()
-    .then(txContinue => {
-      res
-        .status(200)
-        .json({ 
-          message: 'txContinue Posts', 
-          txContinuePosts: txContinue
-        });
-    })
-    .catch(err => {
-      if (!err.statusCode) {
-        err.statusCode = 500;
-      }
-      next(err);
-    });
-}
-
