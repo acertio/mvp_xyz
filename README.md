@@ -1,3 +1,4 @@
+
 # Running
 
 XYZ implementation in NodeJs.
@@ -28,9 +29,11 @@ You can verify that by :
 - Changing the excepted value of the hash in the client side, after the render() methode 
 	> src/pages/Callback/Callback.js  
 
-The AS looks up the transaction from the transaction handle and fetches the interaction reference associated with that transaction. The AS compares the presented reference to the stored interaction reference it appended to the client's callback with `interact`. If they match, the AS continues processing as normal, likely issuing a token.
+The AS looks up the transaction from the transaction handle and fetches the interaction reference associated with that transaction. The AS compares the presented reference to the stored interaction reference it appended to the client's callback with `interact`. Also, the AS needs to compare the nonce value given in the transaction Response and the value sent by the client during the transaction continue request. If they match, the AS continues processing as normal, likely issuing a token. 
 
 You can verify that by :
 
-- Changing the **interaction_url_id**'s value in **createToken** function 
+- Changing the value of **interact_ref** or the **handle** in **createToken** function 
 	> controllers/authserver.js
+
+
