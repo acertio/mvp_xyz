@@ -10,14 +10,14 @@ class Post extends Component {
     };
   }
 
-  componentDidMount () {
-    this.interactionURLHandler();
+  async componentDidMount () {
+    await this.interactionURLHandler(); 
   }
 
-  interactionURLHandler = () => {
+  interactionURLHandler = async () => {
     let url = 'http://localhost:8080/as/responsePosts';
     let method = 'GET'
-    fetch(url, {
+    await fetch(url, {
       method: method,
     }).then(response => {
       console.log('response', response)

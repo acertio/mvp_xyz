@@ -10,10 +10,6 @@ const txResponseSchema = new Schema({
         type: String,
         //required: true
     },
-    client_nonce : {
-        type: String,
-        //required: true
-    },
     server_nonce: {
         type: String,
         //required: true

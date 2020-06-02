@@ -122,66 +122,78 @@ exports.getTransaction = (req, res, next) => {
 
 // Function to get the CallbackUrl + hash + handle  
 exports.getInteractUrl = (req, res, next) => {
-  // Get interact_handle + client_nonce + server_nonce from the DataBase 
-  txResponse.find({}, {
+  // Get client_nonce + uri from the DataBase 
+  txTransaction.find({}, {
     _id : 0,
-    interact_handle: 1,
-    client_nonce: 1,
-    server_nonce: 1
+    interact : 1
   })
-    .then(data => {
-      interact_handle = data[data.length - 1].interact_handle,
-      client_nonce = data[data.length - 1].client_nonce,
-      server_nonce = data[data.length - 1].server_nonce
-      const hash = sha3_512_encode(
-        [client_nonce, server_nonce, interact_handle].join('\n')
-      )
-      const callback = "http://localhost:3000/callback"; // This is the Url that I want to modify, we need to get it from DB 
-      const i =
-      callback + '?hash=' + hash + '&interact=' + interact_handle;
-
-      res.writeHeader(200, {"Content-Type": "text/html"});  
-      res.write(
-        '<head>' + 
-          '<title>XYZ Auth Server </title>' + 
-          '<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">' + 
-        '</head>' + 
-        '<body>' + 
-          '<div>' + 
-              '<h2>XYZ Redirect Client</h2>' + 
-              '<h5>http://localhost:3000</h5>' + 
-              '<button type="button" class="btn btn-success">' + 
-                  '<a id="CallbackUrl" href=' + i + '>Approve</a>' + 
-              '</button>' + 
-              '<button type="button" class="btn btn-secondary">Deny</button>' +
-          '</div>' +
-            /*'<script type="text/javascript"' + 
-              'src="interactPage.js">' + 
-            '</script>' +*/
-        '</body>' 
-      );
-      res.end();
-      //res.sendFile(path.join(__dirname+'/interactPage.html'));
+    .then(result => {
+      client_nonce = result[result.length - 1].interact.callback.nonce
+      uri = result[result.length - 1].interact.callback.uri
+      // Get interact_handle + server_nonce from the DataBase 
+      txResponse.find({}, {
+        _id : 0,
+        interact_handle: 1,
+        server_nonce: 1
+      })
+        .then(data => {
+          interact_handle = data[data.length - 1].interact_handle,
+          server_nonce = data[data.length - 1].server_nonce
+          const hash = sha3_512_encode(
+            [client_nonce, server_nonce, interact_handle].join('\n')
+          )
+          const callback = uri; // This is the Url that I want to modify, we need to get it from DB 
+          const i =
+          callback + '?hash=' + hash + '&interact=' + interact_handle;
+    
+          res.writeHeader(200, {"Content-Type": "text/html"});  
+          res.write(
+            '<head>' + 
+              '<title>XYZ Auth Server </title>' + 
+              '<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">' + 
+            '</head>' + 
+            '<body>' + 
+              '<div>' + 
+                  '<h2>XYZ Redirect Client</h2>' + 
+                  '<h5>http://localhost:3000</h5>' + 
+                  '<button type="button" class="btn btn-success">' + 
+                      '<a id="CallbackUrl" href=' + i + '>Approve</a>' + 
+                  '</button>' + 
+                  '<button type="button" class="btn btn-secondary">Deny</button>' +
+              '</div>' +
+                /*'<script type="text/javascript"' + 
+                  'src="interactPage.js">' + 
+                '</script>' +*/
+            '</body>' 
+          );
+          res.end();
+          //res.sendFile(path.join(__dirname+'/interactPage.html'));
+        })
     })
 };
 
 exports.createHandleHash = (req, res, next) => {
-  txResponse.find({}, {
+  txTransaction.find({}, {
     _id : 0,
-    interact_handle: 1,
-    client_nonce: 1,
-    server_nonce: 1
+    interact: 1
   })
-    .then(data => {
-      interact_handle = data[data.length - 1].interact_handle,
-      client_nonce = data[data.length - 1].client_nonce,
-      server_nonce = data[data.length - 1].server_nonce
-      const hash = sha3_512_encode(
-        [client_nonce, server_nonce, interact_handle].join('\n')
-      )
-      res.json({
-        hash: hash
+    .then(result => {
+      client_nonce = result[result.length - 1].interact.callback.nonce
+      txResponse.find({}, {
+        _id : 0,
+        interact_handle: 1,
+        server_nonce: 1
       })
+        .then(data => {
+          interact_handle = data[data.length - 1].interact_handle,
+          server_nonce = data[data.length - 1].server_nonce
+          const hash = sha3_512_encode(
+            [client_nonce, server_nonce, interact_handle].join('\n')
+          )
+          res.json({
+            hash: hash
+          })
+        })
     })
 }
 
@@ -191,32 +203,30 @@ exports.createResponse = (req, res, next) => {
   const interaction_url_id = utils.generateRandomString(20); // Save in DB
   const interact_handle = utils.generateRandomString(30); // Save in DB 
   const server_nonce = utils.generateRandomString(20); // Save in DB 
-  const client_nonce = utils.generateRandomString(20);  // Save in DB 
   const response = new txResponse({
     interaction_url : "http://localhost:8080/as/interact/"  + interaction_url_id,
     server_nonce : server_nonce,
-    client_nonce : client_nonce,
     interact_handle : interact_handle,
     interaction_url_id : interaction_url_id,
     handle : {
       value : utils.generateRandomString(20),
       type : "bearer"
-    },
-  });
-  response
-  .save()
-  .then(result => {
-    res.status(201).json({
-      message: 'Response sent successfully!',
-      response: result,
-    });
-  })
-  .catch(err => {
-    if (!err.statusCode) {
-      err.statusCode = 500;
     }
-    next(err);
-  });
+    });
+      response
+      .save()
+      .then(result => {
+        res.status(201).json({
+          message: 'Response sent successfully!',
+          response: result,
+        });
+      })
+      .catch(err => {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      });
 };
 
 // GET the Response 
@@ -290,33 +300,37 @@ exports.createToken = (req, res, next) => {
     handle: 1
   })
     .then(result => {
-      console.log('txResponse', result)
-      handle_server = result[result.length - 1].handle.value
       interact_handle = result[result.length - 1].interact_handle
-    // Get interact_handle from DB  + handle_server
-    txContinuation.find({}, {
-      _id : 0,
-      interact_ref: 1,
-      handle: 1
-    })
-      .then((data) => {
-        console.log('txContinuation', data)
-        interact_ref = data[data.length - 1].interact_ref
-        handle_client = data[data.length - 1].handle
-        console.log('interact_ref', interact_ref)
-        console.log('interact_handle', interact_handle)
-        console.log ('handle_client', handle_client)
-        console.log('handle_server', handle_server)
-        if (interact_handle == interact_ref && handle_server == handle_client ) {
-          console.log(true)
-          res.json({
-            token: token
-          });
-        } else {
-          console.log(false)
-          res.sendStatus(404);
-        }
+      console.log('interact_handle', interact_handle)
+      handle_server = result[result.length - 1].handle.value
+      console.log('handle_server', handle_server)
+      // Get interact_handle from DB 
+      txContinuation.find({}, {
+        _id : 0,
+        interact_ref: 1,
+        handle : 1
       })
+        .then((data) => {
+          interact_ref = data[data.length - 1].interact_ref
+          handle_client = data[data.length - 1].handle
+          console.log('interact_ref', interact_ref)
+          console.log('handle_client', handle_client)
+          if (interact_handle == interact_ref && handle_client == handle_server) {
+            console.log(true)
+            res.json({
+              token: token
+            });
+          } else {
+            console.log(false)
+            res.sendStatus(404);
+          }
+        })
+        .catch(err => {
+          if (!err.statusCode) {
+            err.statusCode = 500;
+          }
+          next(err);
+        })
       })
       .catch(err => {
         if (!err.statusCode) {

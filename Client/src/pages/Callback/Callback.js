@@ -15,15 +15,16 @@ class CallbackPage extends Component {
       handle: null,
       hash: null
     }
-    this.responseHandler();
     this.hashHandler();
+    this.responseHandler();
+    this.transactionHandler();
   }
 
   sha3_512_encode = (toHash) => {
     return base64url.fromBase64(Buffer.from(sha3_512(toHash), 'hex').toString('base64'));
   };
 
-  componentDidMount() {
+  componentDidMount () {
     this.tokenHandler();
   }
 
@@ -33,18 +34,30 @@ class CallbackPage extends Component {
     fetch(url, {
       method: method,
     }).then(response => {
-      console.log('response', response)
       return response.json()
       // Use the data
     }).then(resultData => {
-      //console.log('resultDataLength', resultData.txResponsePosts.length)
       this.setState({
         server_nonce : resultData.txResponsePosts[resultData.txResponsePosts.length - 1].server_nonce,
-        client_nonce: resultData.txResponsePosts[resultData.txResponsePosts.length - 1].client_nonce,
-        handle: resultData.txResponsePosts[resultData.txResponsePosts.length - 1].handle.value,
         interact_Callback : resultData.txResponsePosts[resultData.txResponsePosts.length - 1].interact_handle,
+        handle : resultData.txResponsePosts[resultData.txResponsePosts.length - 1].handle.value
       })
       this.txContinuehandler();
+    })
+  }
+
+  transactionHandler = () => {
+    let url = 'http://localhost:8080/as/';
+    let method = 'GET'
+    fetch(url, {
+      method: method,
+    }).then(response => {
+      return response.json()
+      // Use the data
+    }).then(resultData => {
+      this.setState({
+        client_nonce: resultData.posts[resultData.posts.length - 1].interact.callback.nonce,
+      })
     })
   }
 
@@ -60,6 +73,7 @@ class CallbackPage extends Component {
       this.setState({
         access_token: resultData.token.access_token.value
       })
+      console.log('access_token', this.state.access_token)
     })
   }
 

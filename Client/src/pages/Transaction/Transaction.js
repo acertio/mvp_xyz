@@ -17,9 +17,18 @@ class Transaction extends Component {
     editLoading: false
   };
 
+  generateRandomString = (length) => {
+    var result = '';
+    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for (var i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+  }
+
   componentDidMount() {
     this.loadPosts();
-
   }
   
   loadPosts = direction => {
@@ -80,7 +89,7 @@ class Transaction extends Component {
           redirect: true,
           callback: {
               uri: "http://localhost:3000/Callback",
-              nonce: ""
+              nonce: this.generateRandomString(20)
           }
         },
         resourceRequest: {
@@ -189,17 +198,17 @@ class Transaction extends Component {
       });
   };
 
-  responseHandler = () => {
+  responseHandler = async () => {
     let url = 'http://localhost:8080/as/response';
     let method = 'POST'
-    fetch(url, {
+    await fetch(url, {
       method: method,
     }).then(response => {
       return response.json()
       // Use the data
-    }).then(resultData => {
+    })/*.then(resultData => {
       console.log('Response :', resultData.response);
-    })
+    })*/
   }
 
   errorHandler = () => {
@@ -214,9 +223,9 @@ class Transaction extends Component {
     return (
       <Fragment>
         <section className="feed__control">
-          <Button mode="raised" design="accent" onClick={ () => {
+          <Button mode="raised" design="accent" onClick={ async () => {
             this.finishEditHandler(); 
-            this.responseHandler()
+            await this.responseHandler();
           }}>
             New Transaction
           </Button>
