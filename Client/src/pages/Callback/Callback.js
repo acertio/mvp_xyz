@@ -15,9 +15,7 @@ class CallbackPage extends Component {
       handle: null,
       hash: null
     }
-    this.hashHandler();
     this.responseHandler();
-    this.transactionHandler();
   }
 
   sha3_512_encode = (toHash) => {
@@ -25,13 +23,15 @@ class CallbackPage extends Component {
   };
 
   componentDidMount () {
-    this.tokenHandler();
+    this.transactionHandler();
+    this.hashHandler();
+    //this.tokenHandler();
   }
 
-  responseHandler = () => {
+  responseHandler = async () => {
     let url = 'http://localhost:8080/as/responsePosts';
     let method = 'GET'
-    fetch(url, {
+    await fetch(url, {
       method: method,
     }).then(response => {
       return response.json()
@@ -44,10 +44,28 @@ class CallbackPage extends Component {
       })
       this.txContinuehandler();
     })
+    this.tokenHandler();
+  }
+
+  txContinuehandler = async () => {
+    let url = 'http://localhost:8080/as/txContinue';
+    let method = 'POST'
+    await fetch(url, {
+      method: method,
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        handle: this.state.handle,
+        interact_ref: this.state.interact_Callback
+      })
+    }).then(data => {
+      return data.json()
+    })
   }
 
   transactionHandler = () => {
-    let url = 'http://localhost:8080/as/';
+    let url = 'http://localhost:8080/as';
     let method = 'GET'
     fetch(url, {
       method: method,
@@ -58,22 +76,6 @@ class CallbackPage extends Component {
       this.setState({
         client_nonce: resultData.posts[resultData.posts.length - 1].interact.callback.nonce,
       })
-    })
-  }
-
-  tokenHandler = () => {
-    let url = 'http://localhost:8080/as/token';
-    let method = 'POST'
-    fetch(url, {
-      method: method,
-    }).then(token => {
-      return token.json()
-      // Use the data
-    }).then(resultData => {
-      this.setState({
-        access_token: resultData.token.access_token.value
-      })
-      console.log('access_token', this.state.access_token)
     })
   }
 
@@ -91,25 +93,21 @@ class CallbackPage extends Component {
     })
   }
 
-  txContinuehandler = () => {
-    let url = 'http://localhost:8080/as/txContinue';
+  tokenHandler = () => {
+    let url = 'http://localhost:8080/as/token';
     let method = 'POST'
     fetch(url, {
       method: method,
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        handle: this.state.handle,
-        interact_ref: this.state.interact_Callback
-      })
-    }).then(data => {
-      return data.json()
+    }).then(token => {
+      return token.json()
+      // Use the data
     }).then(resultData => {
-      console.log(resultData);
+      this.setState({
+        access_token: resultData.token.access_token.value
+      })
     })
   }
-  
+
   render () {
     const expected_hash = this.sha3_512_encode(
       [this.state.client_nonce, this.state.server_nonce, this.state.interact_Callback].join('\n')
@@ -128,7 +126,7 @@ class CallbackPage extends Component {
                 <span>
                 {this.state.access_token}
                 </span>
-                </dd>
+              </dd>
             </h3>
             <h3 className="post__title" >Transaction Handle :</h3>
           </header>

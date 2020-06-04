@@ -13,17 +13,17 @@ const sha3_512_encode = function (toHash) {
 
 // Get all the Transactions 
 exports.getTransactions = (req, res, next) => {
-  const currentPage = req.query.page || 1;
-  const perPage = 2;
+  /*const currentPage = req.query.page || 1;
+  const perPage = 2;*/
   let totalItems;
   txTransaction.find()
-    .countDocuments()
+    /*.countDocuments()
     .then(count => {
       totalItems = count;
       return txTransaction.find()
         .skip((currentPage - 1) * perPage)
         .limit(perPage);
-    })
+    })*/
     .then(posts => {
       res
         .status(200)
