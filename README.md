@@ -5,18 +5,20 @@ This project is a demonstration of the new protocol currently called [XYZ](https
 
 ## Running
 
-[XYZ](https://oauth.xyz) implementation in NodeJs.
+Implementation in NodeJs.
 
 *This implementation has both the client and AS portions. It's written in NodeJs with a React front end. The **server** is an Express app with MongoDB Atlas and the **client** frontend is a React app.*
 
 To run, start with the client:
 
 `npm install`
+
 `npm start`
 
 Then start with the AS:
 
 `npm install`
+
 `npm start`
 
 The client is accessible at <http://localhost:3000>
@@ -132,4 +134,4 @@ You can verify that by :
 	> controllers/authserver.js
 
 ### Note 
-The OAuth XYZ spec is still a work in progress, and this implementation may not stay up to date as changes are made to the spec.
+GNAP spec is still a work in progress, and this implementation may not stay up to date as changes are made to the spec.
