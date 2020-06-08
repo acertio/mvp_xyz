@@ -1,6 +1,6 @@
 ## Projet 
 
-This project is a demonstration of the new protocol currently called [XYZ](https://oauth.xyz). It is a protocol which is based on a transactional model and which is different from **OAuth 2**. Indeed, as explained on the documentation of this new protocol : 
+This project is a demonstration of the new protocol currently called [XYZ](https://oauth.xyz), or [GNAP (Grant Negotiation and Authorization Protocol)](https://datatracker.ietf.org/wg/txauth/about/). It is a protocol which is based on a transactional model and which is different from **OAuth 2**. Indeed, as explained on the documentation of this new protocol : 
 >The client of the API declares who it is and what it wants, the AS figures out what information it needs to fulfill that (which might include interacting with a user), and ultimately a token is produced. All along the way, components have the opportunity to bind keys to different parts of the transaction so that attackers can't take over. This intent-based system takes in experience and feedback from other similar projects and protocols, but in a way that pulls together many different aspects.
 
 ## Running
