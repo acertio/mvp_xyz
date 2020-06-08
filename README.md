@@ -7,7 +7,7 @@ This project is a demonstration of the new protocol currently called [XYZ](https
 
 [XYZ](https://oauth.xyz) implementation in NodeJs.
 
-*This implementation has both the client and AS portions. It's written in NodeJs with a React front end. The **server** is an Express app with MongoDB and the **client** frontend is a React app.*
+*This implementation has both the client and AS portions. It's written in NodeJs with a React front end. The **server** is an Express app with MongoDB Atlas and the **client** frontend is a React app.*
 
 To run, start with the client:
 
@@ -29,8 +29,9 @@ Acces Token allows you to get protected data. Use GET request with Authorization
 
 ### Setup DataBase Connecion 
 
-Edit the `.env` file in the server side and set the `MONGODB_SERVER` value to connect to Your Atlas Cluster by 
-replacing `YOUR_USERNAME`as well as `YOUR_PASSWORD` with your own values.  
+ 1. Follow this tutorial in order to create an Atlas cluster : [Get Started with Atlas](https://docs.atlas.mongodb.com/getting-started/)
+ 
+ 2. Edit the `.env` file in the server side and set the `MONGODB_SERVER` value to connect to Your Atlas Cluster by replacing `YOUR_USERNAME`as well as `YOUR_PASSWORD` with your own values.  
 
 ## Process
 [Transactional Authorization Process](https://tools.ietf.org/html/draft-richer-transactional-authz-08#page-3)
@@ -97,6 +98,10 @@ When interaction has concluded, the AS returns the user to the RC by redirecting
 **hash**
 **interact_ref**
 
+*Exemple :* 
+```
+http://localhost:3000/Callback?hash=BFad5Crc9WA-zSWUZGLyLcpLA6POtz6PDsyfayAxsQkQWre82mdsJ9vfsWRpmQdPHZuLo8gJ5Zi8s4CraYn7Fg&interact=EIOKGP6fFxaJQEGDamZxNMmbxfSTGG
+```
 To calculate the “**hash**” value for the interaction response, we need to concatenate these three values to each other in this order using a single newline character as a separator between the fields : 
 
  1. "***nonce***" value sent by the Client in the interaction section of the initial transaction request
