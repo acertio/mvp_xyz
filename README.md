@@ -5,8 +5,6 @@ This project is a demonstration of the new protocol currently called [XYZ](https
 
 ## Running
 
-[XYZ](https://oauth.xyz) implementation in NodeJs.
-
 *This implementation has both the client and AS portions. It's written in NodeJs with a React front end. The **server** is an Express app with MongoDB and the **client** frontend is a React app.*
 
 To run, start with the client:
