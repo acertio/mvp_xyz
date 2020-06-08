@@ -35,6 +35,9 @@ Acces Token allows you to get protected data. Use GET request with Authorization
  
  2. Edit the `.env` file in the server side and set the `MONGODB_SERVER` value to connect to Your Atlas Cluster by replacing `YOUR_USERNAME`as well as `YOUR_PASSWORD` with your own values.  
 
+### Result 
+The expected result is shown in this [video](https://drive.google.com/file/d/1n5Me1yPZ3VFX_O8DMETXLb9wC_LbFYFG/view?usp=sharing).
+
 ## Process
 [Transactional Authorization Process](https://tools.ietf.org/html/draft-richer-transactional-authz-08#page-3)
 ```sequence
@@ -97,9 +100,10 @@ If the client indicates a Callback URL in its interact request, the AS creates a
 ***handle*** MUST be unique, MUST be associated with a single transaction, and MUST be one time use.
 
 When interaction has concluded, the AS returns the user to the RC by redirecting the RO's browser to the RC's callback URL presented at the start of the transaction, with the addition of two query parameters :
-**hash**
-**interact_ref**
 
+ 1. **hash**
+ 2. **interact_ref**
+ 
 *Exemple :* 
 ```
 http://localhost:3000/Callback?hash=BFad5Crc9WA-zSWUZGLyLcpLA6POtz6PDsyfayAxsQkQWre82mdsJ9vfsWRpmQdPHZuLo8gJ5Zi8s4CraYn7Fg&interact=EIOKGP6fFxaJQEGDamZxNMmbxfSTGG
