@@ -5,18 +5,24 @@ This project is a demonstration of the new protocol currently called [XYZ](https
 
 ## Running
 
+<<<<<<< HEAD
 [XYZ](https://oauth.xyz) implementation in NodeJs.
 
 *This implementation has both the client and AS portions. It's written in NodeJs with a React front end. The **server** is an Express app with MongoDB Atlas and the **client** frontend is a React app.*
+=======
+*This implementation has both the client and AS portions. It's written in NodeJs with a React front end. The **server** is an Express app with MongoDB and the **client** frontend is a React app.*
+>>>>>>> ccfaebd7337163397d5fdfd0f9d1c5adfe8913a6
 
 To run, start with the client:
 
 `npm install`
+
 `npm start`
 
 Then start with the AS:
 
 `npm install`
+
 `npm start`
 
 The client is accessible at <http://localhost:3000>
