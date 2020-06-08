@@ -7,7 +7,7 @@ This project is a demonstration of the new protocol currently called [XYZ](https
 
 [XYZ](https://oauth.xyz) implementation in NodeJs.
 
-*This implementation has both the client and AS portions. It's written in NodeJs (***AS***) with a React front end  (***Client***).*
+*This implementation has both the client and AS portions. It's written in NodeJs with a React front end. The **server** is an Express app with MongoDB and the **client** frontend is a React app.*
 
 To run, start with the client:
 
@@ -26,6 +26,11 @@ The AS is accessible at : <http://localhost:8080/as>
 Acces Token allows you to get protected data. Use GET request with Authorization to see it. Or, 
 
 `curl -H "Authorization: Bearer <token to copy>" http://localhost:8080/as/data`
+
+### Setup DataBase Connecion 
+
+Edit the `.env` file in the server side and set the `MONGODB_SERVER` value to connect to Your Atlas Cluster by 
+replacing `YOUR_USERNAME`as well as `YOUR_PASSWORD` with your own values.  
 
 ## Process
 [Transactional Authorization Process](https://tools.ietf.org/html/draft-richer-transactional-authz-08#page-3)
@@ -121,5 +126,5 @@ You can verify that by :
 - Changing the value of **interact_ref** or the **handle** in **createToken** function 
 	> controllers/authserver.js
 
-
-
+### Note 
+The OAuth XYZ spec is still a work in progress, and this implementation may not stay up to date as changes are made to the spec.
