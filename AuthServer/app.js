@@ -29,7 +29,7 @@ app.use((error, req, res, next) => {
 });
 
 mongoose.connect(
-    'mongodb+srv://Hamid:7FwKVOc5OSn8juqL@cluster0-dif37.mongodb.net/test?retryWrites=true&w=majority', {
+    'mongodb+srv://Hamid:7FwKVOc5OSn8juqL@cluster0-dif37.mongodb.net/xyz?retryWrites=true&w=majority', {
         useNewUrlParser: true,
         useUnifiedTopology: true
     }

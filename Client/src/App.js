@@ -31,7 +31,7 @@ class App extends Component {
             component = { PostsPage }
           />
           <Route 
-            path="/Callback" 
+            path="/Callback/" 
             component ={ CallbackPage }
           />
         </Switch>

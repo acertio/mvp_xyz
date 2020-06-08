@@ -118,7 +118,7 @@ class CallbackPage extends Component {
         <article className="post">
           <header className="post__header">
             <h3 className="post__meta">
-              Posted on {this.props.date}
+              Posted on {new Date().toLocaleDateString('fr-DE')}
             </h3>
             <h3 className="post__title">
               Access Token : 

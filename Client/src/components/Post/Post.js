@@ -1,51 +1,81 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 
+import Loader from '../Loader/Loader';
 import './Post.css';
 
 class Post extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      interaction_url : null,
+      interact_url_list: [],
+      postsLoading: true
     };
   }
 
-  async componentDidMount () {
-    await this.interactionURLHandler(); 
+  componentDidMount () {
+    this.interactionURLHandler(); 
   }
 
-  interactionURLHandler = async () => {
+  componentDidUpdate() {
+    this.interactionURLHandler();
+  }
+
+  interactionURLHandler = () => {
     let url = 'http://localhost:8080/as/responsePosts';
     let method = 'GET'
-    await fetch(url, {
+    fetch(url, {
       method: method,
     }).then(response => {
-      console.log('response', response)
       return response.json()
       // Use the data
     }).then(resultData => {
       this.setState({
-        interaction_url : resultData.txResponsePosts[resultData.txResponsePosts.length - 1].interaction_url
+        interact_url_list: resultData.txResponsePosts.map(url => {
+          return {
+            ...url
+          };
+        }),
+        postsLoading: false
       })
+    }).catch(err => {
+      console.log(err)
     })
   }
 
   render () {
     return (
-      <article className="post">
-        <header className="post__header">
-          <h3 className="post__meta">
-            Posted on {this.props.date}
-          </h3>
-          <h3 className="post__title">Transaction Handle : </h3>
-          <h3 className="post__title" >Interaction URL :
-            <span className="post__url">
-              <a href={this.state.interaction_url}>{this.state.interaction_url}</a>
-            </span>
-          </h3>
-        </header>
-      </article>
-    )
+      <Fragment>
+      <section>
+        {this.state.postsLoading && (
+          <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+            <Loader />
+          </div>
+        )}
+        {this.state.interact_url_list.length <= 0 && !this.state.postsLoading ? (
+          <p style={{ textAlign: 'center' }}>No transaction is found.</p>
+        ) : null}
+        {!this.state.postsLoading && (
+          <div>
+            {this.state.interact_url_list.map((url, index) => (
+            <article className="post" key={index} id={url._id}>
+              <header className="post__header">
+                <h3 className="post__meta">
+                  Posted on {new Date(url.createdAt).toLocaleDateString('fr-DE')}
+                </h3>
+                <h3 className="post__title">Transaction Handle :</h3>
+                <h3 className="post__title">Interaction URL :
+                  <span className="post__url">
+                    <a href={url.interaction_url} id={url._id}>{url.interaction_url}</a>
+                  </span>
+                </h3>
+              </header>
+            </article>
+            ))}
+          </div>
+        )}
+      </section>
+      </Fragment>
+    );
   }
 }
 
