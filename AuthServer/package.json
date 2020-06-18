@@ -17,7 +17,8 @@
     "express-validator": "^6.4.0",
     "js-sha3": "^0.8.0",
     "jsonwebtoken": "^8.5.1",
-    "mongoose": "^5.9.10"
+    "mongoose": "^5.9.10",
+    "node-localstorage": "^2.1.6"
   },
   "devDependencies": {
     "nodemon": "^2.0.3"

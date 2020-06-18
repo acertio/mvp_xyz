@@ -6,40 +6,13 @@ const utils = require('../utils/utils');
 const base64url = require('base64url');
 const { sha3_512 }  = require('js-sha3');
 const jwt = require('jsonwebtoken');
-
+if (typeof localStorage === "undefined" || localStorage === null) {
+  const LocalStorage = require('node-localstorage').LocalStorage;
+  localStorage = new LocalStorage('./scratch');
+}
 const sha3_512_encode = function (toHash) {
   return base64url.fromBase64(Buffer.from(sha3_512(toHash), 'hex').toString('base64'));
 };
-
-// Get all the Transactions 
-exports.getTransactions = (req, res, next) => {
-  /*const currentPage = req.query.page || 1;
-  const perPage = 2;*/
-  let totalItems;
-  txTransaction.find()
-    /*.countDocuments()
-    .then(count => {
-      totalItems = count;
-      return txTransaction.find()
-        .skip((currentPage - 1) * perPage)
-        .limit(perPage);
-    })*/
-    .then(posts => {
-      res
-        .status(200)
-        .json({ 
-          message: 'Fetched posts successfully.', 
-          posts: posts, 
-          totalItems: totalItems 
-        });
-    })
-    .catch(err => {
-      if (!err.statusCode) {
-        err.statusCode = 500;
-      }
-      next(err);
-    });
-}
 
 // Create a Transaction 
 exports.createTransaction = (req, res, next) => {
@@ -86,148 +59,38 @@ exports.createTransaction = (req, res, next) => {
 
   txtransaction
     .save()
-    .then(data => {
-      res.status(201).json({
-        message: 'txtransaction created successfully!',
-        txtransaction: data,
-      });
-    })
-    .catch(err => {
-      if (!err.statusCode) {
-        err.statusCode = 500;
-      }
-      next(err);
-    });
-}
-
-// Get a transaction by Id 
-exports.getTransaction = (req, res, next) => {
-  const transactionId = req.params.transactionId;
-  txTransaction.findById(transactionId)
-    .then(post => {
-      if (!post) {
-        const error = new Error('Could not find post.');
-        error.statusCode = 404;
-        throw error;
-      }
-      res.status(200).json({ message: 'Post fetched.', post: post });
-    })
-    .catch(err => {
-      if (!err.statusCode) {
-        err.statusCode = 500;
-      }
-      next(err);
-    });
-};
-
-// Function to get the CallbackUrl + hash + handle  
-exports.getInteractUrl = (req, res, next) => {
-  // Get client_nonce + uri from the DataBase 
-  txTransaction.find({}, {
-    _id : 0,
-    interact : 1
-  })
-    .then(result => {
-      client_nonce = result[result.length - 1].interact.callback.nonce
-      uri = result[result.length - 1].interact.callback.uri
-      // Get interact_handle + server_nonce from the DataBase 
-      txResponse.find({}, {
-        _id : 0,
-        interact_handle: 1,
-        server_nonce: 1
-      })
-        .then(data => {
-          interact_handle = data[data.length - 1].interact_handle,
-          server_nonce = data[data.length - 1].server_nonce
-          const hash = sha3_512_encode(
-            [client_nonce, server_nonce, interact_handle].join('\n')
-          )
-          const callback = uri; // This is the Url that I want to modify, we need to get it from DB 
-          const i =
-          callback + '?hash=' + hash + '&interact=' + interact_handle;
-    
-          res.writeHeader(200, {"Content-Type": "text/html"});  
-          res.write(
-            '<head>' + 
-              '<title>XYZ Auth Server </title>' + 
-              '<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">' + 
-            '</head>' + 
-            '<body>' + 
-              '<div>' + 
-                  '<h2>XYZ Redirect Client</h2>' + 
-                  '<h5>http://localhost:3000</h5>' + 
-                  '<button type="button" class="btn btn-success">' + 
-                      '<a id="CallbackUrl" href=' + i + '>Approve</a>' + 
-                  '</button>' + 
-                  '<button type="button" class="btn btn-secondary">Deny</button>' +
-              '</div>' +
-                /*'<script type="text/javascript"' + 
-                  'src="interactPage.js">' + 
-                '</script>' +*/
-            '</body>' 
-          );
-          res.end();
-          //res.sendFile(path.join(__dirname+'/interactPage.html'));
-        })
-    })
-};
-
-exports.createHandleHash = (req, res, next) => {
-  txTransaction.find({}, {
-    _id : 0,
-    interact: 1
-  })
-    .then(result => {
-      client_nonce = result[result.length - 1].interact.callback.nonce
-      txResponse.find({}, {
-        _id : 0,
-        interact_handle: 1,
-        server_nonce: 1
-      })
-        .then(data => {
-          interact_handle = data[data.length - 1].interact_handle,
-          server_nonce = data[data.length - 1].server_nonce
-          const hash = sha3_512_encode(
-            [client_nonce, server_nonce, interact_handle].join('\n')
-          )
-          res.json({
-            hash: hash
-          })
-        })
-    })
-}
-
-// Response to the Transaction 
-exports.createResponse = (req, res, next) => {
-  // Add Response 
-  const interaction_url_id = utils.generateRandomString(20); // Save in DB
-  const interact_handle = utils.generateRandomString(30); // Save in DB 
-  const server_nonce = utils.generateRandomString(20); // Save in DB 
-  const response = new txResponse({
-    interaction_url : "http://localhost:8080/as/interact/"  + interaction_url_id,
-    server_nonce : server_nonce,
-    interact_handle : interact_handle,
-    interaction_url_id : interaction_url_id,
-    handle : {
-      value : utils.generateRandomString(20),
-      type : "bearer"
-    }
-    });
-      response
-      .save()
-      .then(result => {
-        res.status(201).json({
-          message: 'Response sent successfully!',
-          response: result,
-        });
-      })
-      .catch(err => {
-        if (!err.statusCode) {
-          err.statusCode = 500;
+    .then(() => {
+      // Elements for the transaction Response 
+      const interaction_url_id = utils.generateRandomString(20); // Save in DB
+      const server_nonce = utils.generateRandomString(20); // Save in DB 
+      const response = new txResponse({
+        interaction_url : "http://localhost:8080/as/interact/"  + interaction_url_id,
+        server_nonce : server_nonce,
+        handle : {
+          value : utils.generateRandomString(20),
+          type : "bearer"
         }
-        next(err);
       });
-};
+      // Save the response in the DB 
+      response.save()
+      // Add a Response to the transaction  
+      res.status(201).json({
+        interaction_url: response.interaction_url,
+        server_nonce: response.server_nonce,
+        handle: {
+          value: response.handle.value,
+          type: response.handle.type
+        }
+      });
+    })
+    .catch(err => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+    
+}
 
 // GET the Response 
 exports.getResponse = (req, res, next) => {
@@ -246,14 +109,108 @@ exports.getResponse = (req, res, next) => {
       }
       next(err);
     });
+    
 }
+
+// Get all the Transactions 
+exports.getTransactions = (req, res, next) => {
+  let totalItems;
+  txTransaction.find()
+    .then(posts => {
+      res
+        .status(200)
+        .json({ 
+          message: 'Fetched posts successfully.', 
+          posts: posts, 
+          totalItems: totalItems 
+        });
+    })
+    .catch(err => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+}
+
+// Get a transaction by Id 
+exports.getTransaction = (req, res, next) => {
+  const transactionId = req.params.transactionId;
+  txTransaction.findById(transactionId)
+    .then(post => {
+      if (!post) {
+        const error = new Error('Could not find transaction.');
+        error.statusCode = 404;
+        throw error;
+      }
+      res.status(200).json({ message: 'Transaction fetched.', post: post });
+    })
+    .catch(err => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+};
+
+// Function to get the CallbackUrl + hash + handle  
+exports.getInteractUrl = (req, res, next) => {
+  const interact_handle = utils.generateRandomString(30);
+  localStorage.setItem('interact_handle', interact_handle)
+  // Get client_nonce + uri from the DataBase 
+  txTransaction.find({}, {
+    _id : 0,
+    interact : 1
+  })
+    .then(result => {
+      client_nonce = result[result.length - 1].interact.callback.nonce
+      uri = result[result.length - 1].interact.callback.uri
+      // Get interact_handle + server_nonce from the DataBase 
+      txResponse.find({}, {
+        _id : 0,
+        server_nonce: 1
+      })
+        .then(data => {
+          server_nonce = data[data.length - 1].server_nonce
+          const hash = sha3_512_encode(
+            [client_nonce, server_nonce, interact_handle].join('\n')
+          )
+          const callback = uri; // This is the Url that I want to modify, we need to get it from DB 
+          const i =
+          callback + '?hash=' + hash + '&interact=' + interact_handle;
+          res.writeHeader(200, {"Content-Type": "text/html"});  
+          res.write(
+            '<head>' + 
+              '<title>XYZ Auth Server </title>' + 
+              '<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">' + 
+            '</head>' + 
+            '<body>' + 
+              '<div>' + 
+                  '<h2>XYZ Redirect Client</h2>' + 
+                  '<p><span>http://localhost:3000</span></p>' + 
+                  '<a id="CallbackUrl" href=' + i + '>' + 
+                    '<button type="button" class="btn btn-success">Approve</button>' + 
+                  '</a>' + 
+                  '<button type="button" class="btn btn-secondary">Deny</button>' +
+              '</div>' +
+                '<script type="text/javascript"' + 
+                  'function myFunction(req, res) {' + 
+                    //res.redirect(i) + 
+                  '}' + 
+                '</script>' + 
+            '</body>' 
+          );
+          res.end();
+          //res.sendFile(path.join(__dirname+'/interactPage.html'));
+        })
+      })
+};
 
 exports.transactionContinue = (req, res, next) => {
   const txContinue = new txContinuation({
     handle: req.body.handle,
     interact_ref: req.body.interact_ref
   });
-
   txContinue.save()
     .then(data => {
       res.json(data);
@@ -285,6 +242,8 @@ exports.getTransactionContinue = (req, res, next) => {
 
 // Create Token 
 exports.createToken = (req, res, next) => {
+  const interact_handle = localStorage.getItem('interact_handle');
+  console.log('interact_handle', interact_handle)
   // Create Token 
   const user = { name: "UserName"}
   const token = {
@@ -296,12 +255,9 @@ exports.createToken = (req, res, next) => {
   // Get interact_ref from DB 
   txResponse.find({}, {
     _id : 0,
-    interact_handle: 1,
     handle: 1
   })
     .then(result => {
-      interact_handle = result[result.length - 1].interact_handle
-      console.log('interact_handle', interact_handle)
       handle_server = result[result.length - 1].handle.value
       console.log('handle_server', handle_server)
       // Get interact_handle from DB 
@@ -315,7 +271,7 @@ exports.createToken = (req, res, next) => {
           handle_client = data[data.length - 1].handle
           console.log('interact_ref', interact_ref)
           console.log('handle_client', handle_client)
-          if (interact_handle == interact_ref && handle_client == handle_server) {
+          if (interact_ref == interact_handle && handle_client == handle_server) {
             console.log(true)
             res.json({
               token: token

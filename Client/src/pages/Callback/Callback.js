@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 
 import base64url from 'base64url';
 import { sha3_512 } from 'js-sha3';
+import queryString from 'query-string';
 import '../../components/Post/Post.css';
 
 class CallbackPage extends Component {
@@ -11,40 +12,34 @@ class CallbackPage extends Component {
       access_token: null,
       client_nonce: null, 
       server_nonce: null,
-      interact_Callback: null,
+      interact_handle: null,
       handle: null,
       hash: null
     }
-    this.responseHandler();
   }
 
   sha3_512_encode = (toHash) => {
     return base64url.fromBase64(Buffer.from(sha3_512(toHash), 'hex').toString('base64'));
   };
 
-  componentDidMount () {
-    this.transactionHandler();
-    this.hashHandler();
-    //this.tokenHandler();
+  UNSAFE_componentWillMount () {
+    const values = queryString.parse(this.props.location.search)
+    const txResponse = JSON.parse(localStorage.getItem('txResponse'))
+    const txTransaction = JSON.parse(localStorage.getItem('txTransaction'))
+    if (localStorage.getItem('txTransaction') && localStorage.getItem('txResponse')) {
+      this.setState({
+        client_nonce: txTransaction.interact.callback.nonce,
+        server_nonce: txResponse.server_nonce,
+        handle: txResponse.handle.value,
+        interact_handle: values.interact,
+        hash: values.hash
+      })
+    }
+    this.tokenHandler();
   }
 
-  responseHandler = async () => {
-    let url = 'http://localhost:8080/as/responsePosts';
-    let method = 'GET'
-    await fetch(url, {
-      method: method,
-    }).then(response => {
-      return response.json()
-      // Use the data
-    }).then(resultData => {
-      this.setState({
-        server_nonce : resultData.txResponsePosts[resultData.txResponsePosts.length - 1].server_nonce,
-        interact_Callback : resultData.txResponsePosts[resultData.txResponsePosts.length - 1].interact_handle,
-        handle : resultData.txResponsePosts[resultData.txResponsePosts.length - 1].handle.value
-      })
-      this.txContinuehandler();
-    })
-    this.tokenHandler();
+  componentDidMount () {
+    this.txContinuehandler();
   }
 
   txContinuehandler = async () => {
@@ -57,46 +52,17 @@ class CallbackPage extends Component {
       },
       body: JSON.stringify({
         handle: this.state.handle,
-        interact_ref: this.state.interact_Callback
+        interact_ref: this.state.interact_handle
       })
     }).then(data => {
       return data.json()
     })
   }
 
-  transactionHandler = () => {
-    let url = 'http://localhost:8080/as';
-    let method = 'GET'
-    fetch(url, {
-      method: method,
-    }).then(response => {
-      return response.json()
-      // Use the data
-    }).then(resultData => {
-      this.setState({
-        client_nonce: resultData.posts[resultData.posts.length - 1].interact.callback.nonce,
-      })
-    })
-  }
-
-  hashHandler = () => {
-    let url = 'http://localhost:8080/as/hash';
-    let method = 'POST'
-    fetch(url, {
-      method: method
-    }).then(hash => {
-      return hash.json()
-    }).then(resultData => {
-      this.setState({
-        hash: resultData.hash
-      })
-    })
-  }
-
-  tokenHandler = () => {
+  tokenHandler = async () => {
     let url = 'http://localhost:8080/as/token';
     let method = 'POST'
-    fetch(url, {
+    await fetch(url, {
       method: method,
     }).then(token => {
       return token.json()
@@ -110,7 +76,7 @@ class CallbackPage extends Component {
 
   render () {
     const expected_hash = this.sha3_512_encode(
-      [this.state.client_nonce, this.state.server_nonce, this.state.interact_Callback].join('\n')
+      [this.state.client_nonce, this.state.server_nonce, this.state.interact_handle].join('\n')
     )
     //const expected_hash = "aff9b0886e41efcea643033195422b38258e1ae700b3544a33c59d27ec5a9d80dab1017f2f88ba93491d5ac4ad681f27a80811cf2c889c23e1e643ededb830a2"
     if (expected_hash === this.state.hash) {

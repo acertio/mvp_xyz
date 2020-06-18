@@ -16,14 +16,12 @@ router.get('/transaction/:transactionId', authServerController.getTransaction);
 
 // Redirect user to AuthServer 
 router.get('/interact/:id', authServerController.getInteractUrl);
-// Create Response 
-router.post('/response', authServerController.createResponse);
 // Get Response Posts 
 router.get('/responsePosts', authServerController.getResponse);
 
 // Create Token 
-router.post('/token', authServerController.createToken);
-router.post('/hash', authServerController.createHandleHash);
+router.post('/token', authServerController.createToken
+);
 // Protected resources 
 router.get('/data', 
     authServerController.authenticateToken,

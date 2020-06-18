@@ -5,7 +5,7 @@ import Button from '../../components/Button/Button';
 import './Transaction.css';
 
 class Transaction extends Component {
-
+  
   generateRandomString = (length) => {
     var result = '';
     var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -16,70 +16,63 @@ class Transaction extends Component {
     return result;
   }
 
-  finishEditHandler = () => {
+  finishEditHandler = async() => {
+    let tx = {
+      display: {
+        name: "XYZ Redirect Client",
+        uri: ""
+      },
+      interact: {
+        redirect: true,
+        callback: {
+            uri: "http://localhost:3000/Callback",
+            nonce: this.generateRandomString(20)
+        }
+      },
+      resourceRequest: {
+        action : [],
+        locations : [],
+        data : []
+      },
+      claimsRequest: {
+        subject: "02F861EA250FE40BB393AAF978C6E2A4",
+        email: "user@example.com"
+      },
+      user: {
+        handle: "",
+        assertion: ""
+      },
+      keys: {
+        proof : "OAUTHPOP",
+        jwk : {
+            keys: 
+                {
+                    kty:"RSA",
+                    e:"AQAB",
+                    kid:"xyz-client",
+                    alg:"RS256",
+                    n:"zwCT_3bx-glbbHrheYpYpRWiY9I-nEaMRpZnRrIjCs6b_emyTkBkDDEjSysi38OC73hj1-WgxcPdKNGZyIoH3QZen1MKyyhQpLJG1-oLNLqm7pXXtdYzSdC9O3-oiyy8ykO4YUyNZrRRfPcihdQCbO_OC8Qugmg9rgNDOSqppdaNeas1ov9PxYvxqrz1-8Ha7gkD00YECXHaB05uMaUadHq-O_WIvYXicg6I5j6S44VNU65VBwu-AlynTxQdMAWP3bYxVVy6p3-7eTJokvjYTFqgDVDZ8lUXbr5yCTnRhnhJgvf3VjD_malNe8-tOqK5OSDlHTy6gD9NqdGCm-Pm3Q"
+                } 
+        }
+      }
+    }
+    localStorage.setItem('txTransaction', JSON.stringify(tx))
     let url = 'http://localhost:8080/as/transaction';
     let method = 'POST'
-    fetch(url, {
+    await fetch(url, {
       method: method,
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        display: {
-          name: "XYZ Redirect Client",
-          uri: ""
-        },
-        interact: {
-          redirect: true,
-          callback: {
-              uri: "http://localhost:3000/Callback",
-              nonce: this.generateRandomString(20)
-          }
-        },
-        resourceRequest: {
-          action : [],
-          locations : [],
-          data : []
-        },
-        claimsRequest: {
-          subject: "02F861EA250FE40BB393AAF978C6E2A4",
-          email: "user@example.com"
-        },
-        user: {
-          handle: "",
-          assertion: ""
-        },
-        keys: {
-          proof : "OAUTHPOP",
-          jwk : {
-              keys: 
-                  {
-                      kty:"RSA",
-                      e:"AQAB",
-                      kid:"xyz-client",
-                      alg:"RS256",
-                      n:"zwCT_3bx-glbbHrheYpYpRWiY9I-nEaMRpZnRrIjCs6b_emyTkBkDDEjSysi38OC73hj1-WgxcPdKNGZyIoH3QZen1MKyyhQpLJG1-oLNLqm7pXXtdYzSdC9O3-oiyy8ykO4YUyNZrRRfPcihdQCbO_OC8Qugmg9rgNDOSqppdaNeas1ov9PxYvxqrz1-8Ha7gkD00YECXHaB05uMaUadHq-O_WIvYXicg6I5j6S44VNU65VBwu-AlynTxQdMAWP3bYxVVy6p3-7eTJokvjYTFqgDVDZ8lUXbr5yCTnRhnhJgvf3VjD_malNe8-tOqK5OSDlHTy6gD9NqdGCm-Pm3Q"
-                  } 
-          }
-        }
-      })
-    })      
+      body: JSON.stringify(tx)
+
+    }) 
     .then(res => {
       return res.json();
     })
-
-  };
-
-  responseHandler = async () => {
-    let url = 'http://localhost:8080/as/response';
-    let method = 'POST'
-    await fetch(url, {
-      method: method,
+    .then(resultData => {
+      localStorage.setItem('txResponse', JSON.stringify(resultData))
     })
-    .then(response => {
-      return response.json()
-    })
-
   };
 
   render() {
@@ -87,17 +80,15 @@ class Transaction extends Component {
       <Fragment>
         <section className="feed__control">
           <Button mode="raised" design="accent" onClick={ async () => {
-            this.finishEditHandler(); 
-            await this.responseHandler();
+            await this.finishEditHandler(); 
+            window.location.reload(false);
           }}>
             New Transaction
           </Button>
         </section>
         <section>
           <div>
-            {
-              <Post />
-            }
+            <Post />
           </div>
         </section>
       </Fragment>
