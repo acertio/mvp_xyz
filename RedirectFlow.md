@@ -1,4 +1,4 @@
- ### XYZ/GNAP
+ #### XYZ/GNAP
 
  ### Process
 
@@ -16,7 +16,7 @@
    |        |                                  |       |           |      |
    |        |                                  |       |<---(5)--->|      |
    |        |                                  |       |   auth    |      |
-   |        |<--- http Redirect ---(6)---------| - - - |-----------|      |
+   |        |<- redirect to Client CallBack (6)| - - - |-----------|      |
    |        |                                  |       |           |      |
    |        |--(7)--- txContinuation --------->|       |           +------+
    |        |                                  |       |
@@ -26,7 +26,7 @@
 ```
 
 #### Step 1 : [Transaction Request](https://oauth.xyz/transactionrequest/)
-The client begins the transaction by creating a transaction Request. It sends an http POST request to the transaction endpoint of the Authorization Server. The request is a JSON document that contains several parts :
+The client begins the transaction by creating a transaction Request ***(1)***. It sends an http POST request to the transaction endpoint of the Authorization Server. The request is a JSON document that contains several parts :
 ```
 display: {
 	name:  "XYZ Redirect Client",
@@ -75,7 +75,7 @@ You can see that in the **postTransaction** function in the Client side:
 > src/pages/Transaction/Transaction.js  
  
 #### Step 2 : [Transaction Response](https://oauth.xyz/transactionresponse/)
-The AS creates a unique interaction URL and returns it to the client. Note that the client sends the request and gets the response **directly** : 
+The AS creates a unique interaction URL and returns it to the client ***(2)***. Note that the client sends the request and gets the response **directly** : 
 ```
 handle:  { 
 	type: "bearer",
@@ -85,12 +85,14 @@ interaction_url: "http://localhost:8080/as/interact/p8Ts6CKzlP7TBHhH8ib3",
 server_nonce: "UJcpho6RRT25lK6ysj4m"
 ```
 #### Step 3 : [Transaction Interaction](https://oauth.xyz/interaction/) 
-The client sends the user to an interactive page at the AS. 
+The client sends the user to an interactive page at the AS ***(3)***. 
 ```
 http://localhost:8080/as/interact/p8Ts6CKzlP7TBHhH8ib3
 ```
+Once at the AS ***(4)***, this latter can ask the user for authentication as explained in the section [interaction](https://oauth.xyz/interaction/) ***(5)*** 
+>Once at the AS, the AS can ask the user for authentication, and to authorize the application itself. The AS could prompt the user to provide additional claims or proofs however it sees fit, and this interaction is ultimately outside of the protocol.
 
-Once at the AS, this latter returns the user to the Client by redirecting the RO's browser to the Client's callback URL presented at the start of the transaction, with the addition of two query parameters :
+The AS returns the user to the Client by redirecting the RO's browser to the Client's callback URL presented at the start of the transaction ***(6)***, with the addition of two query parameters :
  1. **hash**
  2. **interact_ref**
 
@@ -120,7 +122,7 @@ You can verify that by :
 - Changing the excepted value of the hash in the client side, after the **componentDidMount** method 
 	> src/pages/Callback/Callback.js  
 
-The Client then sends an http POST request to the AS, that includes :
+The Client then sends an http POST request to the AS ***(7)***, that includes :
 -   ***handle***
 -   ***interact_ref***
 ```
@@ -131,7 +133,7 @@ You can see that in the **txContinuehandler** function in the Client side:
 
 > src/pages/Callback/Callback.js  
  
-The AS looks up the transaction from the transaction handle and fetches the interaction reference associated with that transaction. The AS compares the presented reference to the stored interaction reference it appended to the client's callback with `interact_handle`. Also, the AS needs to compare the handle value given in the transaction Response and the value sent by the client during the transaction continue request. If they match, the AS continues processing as normal, likely issuing a token. 
+The AS looks up the transaction from the transaction handle and fetches the interaction reference associated with that transaction. The AS compares the presented reference to the stored interaction reference it appended to the client's callback with `interact_handle`. Also, the AS needs to compare the handle value given in the transaction Response and the value sent by the client during the transaction continue request. If they match, the AS continues processing as normal, likely issuing a token ***(8)***. 
 
 You can verify that by :
 
