@@ -14,18 +14,18 @@
    |        |                                  |       |   http    |      |  
    |        |				       |       | Redirect  |      |
    |        |                                  |       |           |      |
-   |        |                                  |       |<---(5)--->|      |
-   |        |                                  |       |   auth    |      |
-   |        |<- redirect to Client CallBack (6)| - - - |-----------|      |
    |        |                                  |       |           |      |
-   |        |--(7)--- txContinuation --------->|       |           +------+
+   |        |                                  |       |           |      |
+   |        |<- redirect to Client CallBack (5)| - - - |-----------|      |
+   |        |                                  |       |           |      |
+   |        |--(6)--- txContinuation --------->|       |           +------+
    |        |                                  |       |
-   |        |<--------- Token ------------(8)--|       |
+   |        |<--------- Token ------------(7)--|       |
    |        |                                  |       |
    +--------+                                  +-------+   
 ```
 
-#### Step 1 : [Transaction Request](https://oauth.xyz/transactionrequest/)
+#### Step A : [Transaction Request](https://oauth.xyz/transactionrequest/)
 The client begins the transaction by creating a transaction Request ***(1)***. It sends an http POST request to the transaction endpoint of the Authorization Server. The request is a JSON document that contains several parts :
 ```
 display: {
@@ -74,7 +74,7 @@ You can see that in the **postTransaction** function in the Client side:
 
 > src/pages/Transaction/Transaction.js  
  
-#### Step 2 : [Transaction Response](https://oauth.xyz/transactionresponse/)
+#### Step B : [Transaction Response](https://oauth.xyz/transactionresponse/)
 The AS creates a unique interaction URL and returns it to the client ***(2)***. Note that the client sends the request and gets the response **directly** : 
 ```
 handle:  { 
@@ -84,15 +84,12 @@ handle:  {
 interaction_url: "http://localhost:8080/as/interact/p8Ts6CKzlP7TBHhH8ib3",
 server_nonce: "UJcpho6RRT25lK6ysj4m"
 ```
-#### Step 3 : [Transaction Interaction](https://oauth.xyz/interaction/) 
+#### Step C : [Transaction Interaction](https://oauth.xyz/interaction/) 
 The client sends the user to an interactive page at the AS ***(3)***. 
 ```
 http://localhost:8080/as/interact/p8Ts6CKzlP7TBHhH8ib3
 ```
-Once at the AS ***(4)***, this latter can ask the user for authentication as explained in the section [interaction](https://oauth.xyz/interaction/) ***(5)*** 
->Once at the AS, the AS can ask the user for authentication, and to authorize the application itself. The AS could prompt the user to provide additional claims or proofs however it sees fit, and this interaction is ultimately outside of the protocol.
-
-The AS returns the user to the Client by redirecting the RO's browser to the Client's callback URL presented at the start of the transaction ***(6)***, with the addition of two query parameters :
+Once at the AS ***(4)***, this latter returns the user to the Client by redirecting the RO's browser to the Client's callback URL presented at the start of the transaction ***(6)***, with the addition of two query parameters :
  1. **hash**
  2. **interact_ref**
 
