@@ -1,6 +1,5 @@
  ### XYZ/GNAP
-#### Step 1 : Transaction Request
-
+#### Step 1 : [Transaction Request](https://oauth.xyz/transactionrequest/)
 The client begins the transaction by creating a transaction Request. It sends an http POST request to the transaction endpoint of the Authorization Server. The request is a JSON document that contains several parts :
 ```
 display: {
@@ -49,7 +48,7 @@ You can see that in the **postTransaction** function :
 
 > src/pages/Transaction/Transaction.js  
  
-#### Step 2 : Transaction Response
+#### Step 2 : [Transaction Response](https://oauth.xyz/transactionresponse/)
 The client indicates a Callback URL in its interact request, so the AS creates a unique interaction URL and returns it to the client. Note that the client sends the request and gets the response directlty : 
 ```
 handle:  { 
@@ -59,7 +58,7 @@ handle:  {
 interaction_url: "http://localhost:8080/as/interact/p8Ts6CKzlP7TBHhH8ib3",
 server_nonce: "UJcpho6RRT25lK6ysj4m"
 ```
-#### Step 3 : Transaction Interaction 
+#### Step 3 : [Transaction Interaction](https://oauth.xyz/interaction/) 
 The client sends the user to an interactive page at the AS, the URL is the one sent in the transaction response. 
 ```
 http://localhost:8080/as/interact/p8Ts6CKzlP7TBHhH8ib3
@@ -107,5 +106,5 @@ The AS looks up the transaction from the transaction handle and fetches the inte
 
 You can verify that by :
 
-- Changing the value of **interact_ref** or the **handle** in the Server side after the **createToken** function 
+- Changing the value of **interact_ref** or the **handle** in the server side after the **createToken** function 
 	> controllers/authserver.js
