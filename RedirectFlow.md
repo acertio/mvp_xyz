@@ -1,7 +1,8 @@
  ### XYZ/GNAP
 
  ### Process
- ```
+
+```
    +--------+                                  +-------+
    | Client |                                  |  AS   |
    |        |--(1)--- txRequest -------------->|       |
@@ -11,7 +12,7 @@
    |        |--(3)--- interaction_url ---------| - - - |---------->|      |
    |        |                                  |       |<---(4)--->|      |
    |        |                                  |       |   http    |      |  
-   |        |				       |       | Redirect  |      |
+   |        |				                   |       | Redirect  |      |
    |        |                                  |       |           |      |
    |        |                                  |       |<---(5)--->|      |
    |        |                                  |       |   auth    |      |
@@ -23,7 +24,7 @@
    |        |                                  |       |
    +--------+                                  +-------+   
 ```
- 
+
 #### Step 1 : [Transaction Request](https://oauth.xyz/transactionrequest/)
 The client begins the transaction by creating a transaction Request. It sends an http POST request to the transaction endpoint of the Authorization Server. The request is a JSON document that contains several parts :
 ```
@@ -84,12 +85,12 @@ interaction_url: "http://localhost:8080/as/interact/p8Ts6CKzlP7TBHhH8ib3",
 server_nonce: "UJcpho6RRT25lK6ysj4m"
 ```
 #### Step 3 : [Transaction Interaction](https://oauth.xyz/interaction/) 
-The client sends the user to an interactive page at the AS, the URL is the one sent in the transaction response. 
+The client sends the user to an interactive page at the AS. 
 ```
 http://localhost:8080/as/interact/p8Ts6CKzlP7TBHhH8ib3
 ```
 
-Once at the AS, the latter returns the user to the Client by redirecting the RO's browser to the Client's callback URL presented at the start of the transaction, with the addition of two query parameters :
+Once at the AS, this latter returns the user to the Client by redirecting the RO's browser to the Client's callback URL presented at the start of the transaction, with the addition of two query parameters :
  1. **hash**
  2. **interact_ref**
 
