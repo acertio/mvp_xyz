@@ -1,8 +1,7 @@
  ### XYZ/GNAP
 
  ### Process
-
-```
+ ```
    +--------+                                  +-------+
    | Client |                                  |  AS   |
    |        |--(1)--- txRequest -------------->|       |
@@ -12,11 +11,7 @@
    |        |--(3)--- interaction_url ---------| - - - |---------->|      |
    |        |                                  |       |<---(4)--->|      |
    |        |                                  |       |   http    |      |  
-<<<<<<< HEAD
    |        |							      |       | Redirect  |      |
-=======
-   |        |				       |       | Redirect  |      |
->>>>>>> 757433d9c9a9bb8a936707c6dd1d6023238b6751
    |        |                                  |       |           |      |
    |        |                                  |       |<---(5)--->|      |
    |        |                                  |       |   auth    |      |
@@ -28,7 +23,7 @@
    |        |                                  |       |
    +--------+                                  +-------+   
 ```
-
+ 
 #### Step 1 : [Transaction Request](https://oauth.xyz/transactionrequest/)
 The client begins the transaction by creating a transaction Request. It sends an http POST request to the transaction endpoint of the Authorization Server. The request is a JSON document that contains several parts :
 ```
