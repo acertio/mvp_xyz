@@ -89,7 +89,7 @@ The client sends the user to an interactive page at the AS ***(3)***.
 ```
 http://localhost:8080/as/interact/p8Ts6CKzlP7TBHhH8ib3
 ```
-Once at the AS ***(4)***, this latter returns the user to the Client by redirecting the RO's browser to the Client's callback URL presented at the start of the transaction ***(6)***, with the addition of two query parameters :
+Once at the AS ***(4)***, this latter returns the user to the Client by redirecting the RO's browser to the Client's callback URL presented at the start of the transaction ***(5)***, with the addition of two query parameters :
  1. **hash**
  2. **interact_ref**
 
@@ -119,7 +119,7 @@ You can verify that by :
 - Changing the excepted value of the hash in the client side, after the **componentDidMount** method 
 	> src/pages/Callback/Callback.js  
 
-The Client then sends an http POST request to the AS ***(7)***, that includes :
+The Client then sends an http POST request to the AS ***(6)***, that includes :
 -   ***handle***
 -   ***interact_ref***
 ```
@@ -130,7 +130,7 @@ You can see that in the **txContinuehandler** function in the Client side:
 
 > src/pages/Callback/Callback.js  
  
-The AS looks up the transaction from the transaction handle and fetches the interaction reference associated with that transaction. The AS compares the presented reference to the stored interaction reference it appended to the client's callback with `interact_handle`. Also, the AS needs to compare the handle value given in the transaction Response and the value sent by the client during the transaction continue request. If they match, the AS continues processing as normal, likely issuing a token ***(8)***. 
+The AS looks up the transaction from the transaction handle and fetches the interaction reference associated with that transaction. The AS compares the presented reference to the stored interaction reference it appended to the client's callback with `interact_handle`. Also, the AS needs to compare the handle value given in the transaction Response and the value sent by the client during the transaction continue request. If they match, the AS continues processing as normal, likely issuing a token ***(7)***. 
 
 You can verify that by :
 
