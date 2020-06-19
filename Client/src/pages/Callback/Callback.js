@@ -14,7 +14,8 @@ class CallbackPage extends Component {
       server_nonce: null,
       interact_handle: null,
       handle: null,
-      hash: null
+      hash: null,
+      expected_hash: null
     }
   }
 
@@ -22,7 +23,7 @@ class CallbackPage extends Component {
     return base64url.fromBase64(Buffer.from(sha3_512(toHash), 'hex').toString('base64'));
   };
 
-  UNSAFE_componentWillMount () {
+  UNSAFE_componentWillMount() {
     const values = queryString.parse(this.props.location.search)
     const txResponse = JSON.parse(localStorage.getItem('txResponse'))
     const txTransaction = JSON.parse(localStorage.getItem('txTransaction'))
@@ -35,11 +36,22 @@ class CallbackPage extends Component {
         hash: values.hash
       })
     }
-    this.tokenHandler();
+    //this.tokenHandler();
   }
 
-  componentDidMount () {
-    this.txContinuehandler();
+  componentDidMount = async () => {
+    const expected_hash = this.sha3_512_encode(
+      [this.state.client_nonce, this.state.server_nonce, this.state.interact_handle].join('\n')
+    );
+    //const expected_hash = "aff9b0886e41efcea643033195422b38258e1ae700b3544a33c59d27ec5a9d80dab1017f2f88ba93491d5ac4ad681f27a80811cf2c889c23e1e643ededb830a2"
+    if (expected_hash === this.state.hash) {
+      await this.txContinuehandler();
+      this.tokenHandler();
+    }
+    this.setState({
+      expected_hash: expected_hash
+    })
+
   }
 
   txContinuehandler = async () => {
@@ -73,13 +85,9 @@ class CallbackPage extends Component {
       })
     })
   }
-
+  
   render () {
-    const expected_hash = this.sha3_512_encode(
-      [this.state.client_nonce, this.state.server_nonce, this.state.interact_handle].join('\n')
-    )
-    //const expected_hash = "aff9b0886e41efcea643033195422b38258e1ae700b3544a33c59d27ec5a9d80dab1017f2f88ba93491d5ac4ad681f27a80811cf2c889c23e1e643ededb830a2"
-    if (expected_hash === this.state.hash) {
+    if (this.state.expected_hash === this.state.hash) {
       return (
         <article className="post">
           <header className="post__header">
@@ -90,11 +98,17 @@ class CallbackPage extends Component {
               Access Token : 
               <dd>
                 <span>
-                {this.state.access_token}
+                  {this.state.access_token}
                 </span>
               </dd>
             </h3>
-            <h3 className="post__title" >Transaction Handle :</h3>
+            <h3 className="post__title" >Transaction Handle :
+              <dd>
+                <span>
+                  {this.state.handle}
+                </span>
+              </dd>
+            </h3>
           </header>
         </article>
       )

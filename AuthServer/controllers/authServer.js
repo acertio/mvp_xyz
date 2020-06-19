@@ -67,7 +67,7 @@ exports.createTransaction = (req, res, next) => {
         interaction_url : "http://localhost:8080/as/interact/"  + interaction_url_id,
         server_nonce : server_nonce,
         handle : {
-          value : utils.generateRandomString(20),
+          value : utils.generateRandomString(64),
           type : "bearer"
         }
       });
@@ -269,6 +269,7 @@ exports.createToken = (req, res, next) => {
         .then((data) => {
           interact_ref = data[data.length - 1].interact_ref
           handle_client = data[data.length - 1].handle
+          //handle_client = "YesIchangedTheHandleValue"
           console.log('interact_ref', interact_ref)
           console.log('handle_client', handle_client)
           if (interact_ref == interact_handle && handle_client == handle_server) {

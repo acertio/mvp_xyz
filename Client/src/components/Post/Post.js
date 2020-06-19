@@ -26,11 +26,19 @@ class Post extends Component {
                     <h3 className="post__meta">
                       Posted on {new Date().toLocaleDateString('fr-DE')}
                     </h3>
-                    <h3 className="post__title">Transaction Handle : </h3>
+                    <h3 className="post__title">Transaction Handle : 
+                      <dd>
+                        <span>
+                          {url.handle.value}
+                        </span>
+                      </dd>
+                    </h3>
                     <h3 className="post__title">Interaction URL :
-                      <span className="post__url">
-                        <a href={url.interaction_url}>{url.interaction_url}</a>
-                      </span>
+                      <dd>
+                        <span className="post__url">
+                          <a href={url.interaction_url}>{url.interaction_url}</a>
+                        </span>
+                      </dd>
                     </h3>
                   </header>
                 </article>

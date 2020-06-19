@@ -12,7 +12,7 @@
 }
 
 .post__title {
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   margin: 1rem 0;
   color: #3b0062;
 }
@@ -30,9 +30,11 @@
 }
 
 .post__url a {
+  font-size: large;
   background-color: white;
   color: #3b0062;
 }
+
 
 @media (min-width: 768px) {
   .post {

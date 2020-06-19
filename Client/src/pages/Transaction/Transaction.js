@@ -16,7 +16,7 @@ class Transaction extends Component {
     return result;
   }
 
-  finishEditHandler = async() => {
+  postTransaction = async() => {
     let tx = {
       display: {
         name: "XYZ Redirect Client",
@@ -80,7 +80,7 @@ class Transaction extends Component {
       <Fragment>
         <section className="feed__control">
           <Button mode="raised" design="accent" onClick={ async () => {
-            await this.finishEditHandler(); 
+            await this.postTransaction(); 
             window.location.reload(false);
           }}>
             New Transaction
