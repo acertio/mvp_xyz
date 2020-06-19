@@ -29,7 +29,7 @@ Acces Token allows you to get protected data. Use GET request with Authorization
 
 `curl -H "Authorization: Bearer <token to copy>" http://localhost:8080/as/data`
 
-### Setup DataBase Connecion 
+### Connection 
 
  1. Follow this tutorial in order to create an Atlas cluster : [Get Started with Atlas](https://docs.atlas.mongodb.com/getting-started/)
  

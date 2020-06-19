@@ -1,4 +1,30 @@
  ### XYZ/GNAP
+
+ ### Process
+
+```
+   +--------+                                  +-------+
+   | Client |                                  |  AS   |
+   |        |--(1)--- txRequest -------------->|       |
+   |        |                                  |       |
+   |        |<--- txResponse ---(2)------------|       |           +------+
+   |        |                                  |       |           | User |
+   |        |--(3)--- interaction_url ---------| - - - |---------->|      |
+   |        |                                  |       |<---(4)--->|      |
+   |        |                                  |       |   http    |      |  
+   |        |							       |       | Redirect  |      |
+   |        |                                  |       |           |      |
+   |        |                                  |       |<---(5)--->|      |
+   |        |                                  |       |   auth    |      |
+   |        |<--- http Redirect ---(6)---------| - - - |-----------|      |
+   |        |                                  |       |           |      |
+   |        |--(7)--- txContinuation --------->|       |           +------+
+   |        |                                  |       |
+   |        |<--------- Token ------------(8)--|       |
+   |        |                                  |       |
+   +--------+                                  +-------+   
+```
+
 #### Step 1 : [Transaction Request](https://oauth.xyz/transactionrequest/)
 The client begins the transaction by creating a transaction Request. It sends an http POST request to the transaction endpoint of the Authorization Server. The request is a JSON document that contains several parts :
 ```
@@ -44,12 +70,12 @@ The client needs to remember its own state, for this reason, we have chosen to u
  - Transaction Request
  - Transaction Response 
 
-You can see that in the **postTransaction** function : 
+You can see that in the **postTransaction** function in the Client side: 
 
 > src/pages/Transaction/Transaction.js  
  
 #### Step 2 : [Transaction Response](https://oauth.xyz/transactionresponse/)
-The client indicates a Callback URL in its interact request, so the AS creates a unique interaction URL and returns it to the client. Note that the client sends the request and gets the response directlty : 
+The AS creates a unique interaction URL and returns it to the client. Note that the client sends the request and gets the response **directly** : 
 ```
 handle:  { 
 	type: "bearer",
@@ -101,7 +127,10 @@ The Client then sends an http POST request to the AS, that includes :
 handle: "DemhyjDKyz9bfpN33czZzvngWTIb2gTLqADGVS5YHa7DOnHlYYGpS1BmmhipBNvt",
 interact_ref: "EIOKGP6fFxaJQEGDamZxNMmbxfSTGG"
 ```
+You can see that in the **txContinuehandler** function in the Client side: 
 
+> src/pages/Callback/Callback.js  
+ 
 The AS looks up the transaction from the transaction handle and fetches the interaction reference associated with that transaction. The AS compares the presented reference to the stored interaction reference it appended to the client's callback with `interact_handle`. Also, the AS needs to compare the handle value given in the transaction Response and the value sent by the client during the transaction continue request. If they match, the AS continues processing as normal, likely issuing a token. 
 
 You can verify that by :
