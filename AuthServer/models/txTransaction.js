@@ -27,6 +27,9 @@ const txTransactionSchema = new Schema({
         //required: true
     },
     resourceRequest: {
+        resources : {
+            type: Array
+        },
         type: Object,
         //required: true
     }

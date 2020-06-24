@@ -40,9 +40,13 @@ interact: {
 	}
 },
 resourceRequest: {
-	action : [],
-	locations : [],
-	data : []
+	ressources : [
+		{
+			action : [],
+			locations : [],
+			data : []
+		}
+	]
 },
 claimsRequest: {
 	subject:  "02F861EA250FE40BB393AAF978C6E2A4",
@@ -55,13 +59,11 @@ user: {
 keys: {
 	proof :  "OAUTHPOP",
 	jwk : {
-		keys: {
-			kty:"RSA",
-			e:"AQAB",
-			kid:"xyz-client",
-			alg:"RS256",
-			n:"zwCT_3bx-glbbHrheYpYpRWiY9I-nEaMRpZnRrIjCs6b_emyTkBkDDEjSysi38OC73hj1-WgxcPdKNGZyIoH3QZen1MKyyhQpLJG1-oLNLqm7pXXtdYzSdC9O3-oiyy8ykO4YUyNZrRRfPcihdQCbO_OC8Qugmg9rgNDOSqppdaNeas1ov9PxYvxqrz1-8Ha7gkD00YECXHaB05uMaUadHq-O_WIvYXicg6I5j6S44VNU65VBwu-AlynTxQdMAWP3bYxVVy6p3-7eTJokvjYTFqgDVDZ8lUXbr5yCTnRhnhJgvf3VjD_malNe8-tOqK5OSDlHTy6gD9NqdGCm-Pm3Q"
-		}
+		"kty":"RSA",
+		"e":"AQAB",
+		"kid":"xyz-client",
+		"alg":"RS256",
+		"n":"zwCT_3bx-glbbHrheYpYpRWiY9I-nEaMRpZnRrIjCs6b_emyTkBkDDEjSysi38OC73hj1-WgxcPdKNGZyIoH3QZen1MKyyhQpLJG1-oLNLqm7pXXtdYzSdC9O3-oiyy8ykO4YUyNZrRRfPcihdQCbO_OC8Qugmg9rgNDOSqppdaNeas1ov9PxYvxqrz1-8Ha7gkD00YECXHaB05uMaUadHq-O_WIvYXicg6I5j6S44VNU65VBwu-AlynTxQdMAWP3bYxVVy6p3-7eTJokvjYTFqgDVDZ8lUXbr5yCTnRhnhJgvf3VjD_malNe8-tOqK5OSDlHTy6gD9NqdGCm-Pm3Q"
 	}
 }
 ```
@@ -134,5 +136,5 @@ The AS looks up the transaction from the transaction handle and fetches the inte
 
 You can verify that by :
 
-- Changing the value of **interact_ref** or the **handle** in the server side after the **createToken** function 
+- Changing the value of **interact_ref** or the **handle** in the server side after the **transactionContinue** function 
 	> controllers/authserver.js

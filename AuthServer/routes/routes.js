@@ -3,25 +3,21 @@ const authServerController = require('../controllers/authServer');
 
 const router = express.Router();
 
-// GET /as
+// GET all the Transactions /as
 router.get('/', authServerController.getTransactions);
 
-// POST /as/post
-router.post(
-    '/transaction', 
-    authServerController.createTransaction
-);
+// POST /as/transaction
+router.post('/transaction', authServerController.createTransaction);
 
+// GET a transaction by Id 
 router.get('/transaction/:transactionId', authServerController.getTransaction);
 
 // Redirect user to AuthServer 
 router.get('/interact/:id', authServerController.getInteractUrl);
-// Get Response Posts 
+
+// GET the Response 
 router.get('/responsePosts', authServerController.getResponse);
 
-// Create Token 
-router.post('/token', authServerController.createToken
-);
 // Protected resources 
 router.get('/data', 
     authServerController.authenticateToken,
@@ -30,5 +26,8 @@ router.get('/data',
 
 // Transaction Continue 
 router.post('/txContinue', authServerController.transactionContinue);
+
+// Get Transaction Continue 
 router.get('/txContinuePosts', authServerController.getTransactionContinue);
+
 module.exports = router;

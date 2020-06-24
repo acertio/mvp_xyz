@@ -19,7 +19,7 @@ const txResponseSchema = new Schema({
         //required: true
     },
     handle: {
-        type: Object,
+        type: Object 
         //required: true
     }
 

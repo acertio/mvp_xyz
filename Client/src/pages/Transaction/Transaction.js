@@ -20,7 +20,7 @@ class Transaction extends Component {
     let tx = {
       display: {
         name: "XYZ Redirect Client",
-        uri: ""
+        uri: "http://localhost:3000"
       },
       interact: {
         redirect: true,
@@ -29,10 +29,14 @@ class Transaction extends Component {
             nonce: this.generateRandomString(20)
         }
       },
-      resourceRequest: {
-        action : [],
-        locations : [],
-        data : []
+      resourceRequest : {
+        resources: [
+          {
+            action : [],
+            locations : [],
+            data : []
+          }
+        ]
       },
       claimsRequest: {
         subject: "02F861EA250FE40BB393AAF978C6E2A4",
@@ -45,14 +49,11 @@ class Transaction extends Component {
       keys: {
         proof : "OAUTHPOP",
         jwk : {
-            keys: 
-                {
-                    kty:"RSA",
-                    e:"AQAB",
-                    kid:"xyz-client",
-                    alg:"RS256",
-                    n:"zwCT_3bx-glbbHrheYpYpRWiY9I-nEaMRpZnRrIjCs6b_emyTkBkDDEjSysi38OC73hj1-WgxcPdKNGZyIoH3QZen1MKyyhQpLJG1-oLNLqm7pXXtdYzSdC9O3-oiyy8ykO4YUyNZrRRfPcihdQCbO_OC8Qugmg9rgNDOSqppdaNeas1ov9PxYvxqrz1-8Ha7gkD00YECXHaB05uMaUadHq-O_WIvYXicg6I5j6S44VNU65VBwu-AlynTxQdMAWP3bYxVVy6p3-7eTJokvjYTFqgDVDZ8lUXbr5yCTnRhnhJgvf3VjD_malNe8-tOqK5OSDlHTy6gD9NqdGCm-Pm3Q"
-                } 
+          "kty":"RSA",
+          "e":"AQAB",
+          "kid":"xyz-client",
+          "alg":"RS256",
+          "n":"zwCT_3bx-glbbHrheYpYpRWiY9I-nEaMRpZnRrIjCs6b_emyTkBkDDEjSysi38OC73hj1-WgxcPdKNGZyIoH3QZen1MKyyhQpLJG1-oLNLqm7pXXtdYzSdC9O3-oiyy8ykO4YUyNZrRRfPcihdQCbO_OC8Qugmg9rgNDOSqppdaNeas1ov9PxYvxqrz1-8Ha7gkD00YECXHaB05uMaUadHq-O_WIvYXicg6I5j6S44VNU65VBwu-AlynTxQdMAWP3bYxVVy6p3-7eTJokvjYTFqgDVDZ8lUXbr5yCTnRhnhJgvf3VjD_malNe8-tOqK5OSDlHTy6gD9NqdGCm-Pm3Q"
         }
       }
     }

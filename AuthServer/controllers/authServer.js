@@ -28,10 +28,14 @@ exports.createTransaction = (req, res, next) => {
           nonce: req.body.interact.callback.nonce
       }
     },
-    resourceRequest: {
-      action : req.body.resourceRequest.action,
-      locations : req.body.resourceRequest.locations,
-      data : req.body.resourceRequest.data
+    resourceRequest : {
+      resources: [
+        {
+          action : req.body.resourceRequest.resources.action,
+          locations : req.body.resourceRequest.resources.locations,
+          data : req.body.resourceRequest.resources.data
+        }
+      ]
     },
     claimsRequest: {
       subject: req.body.claimsRequest.subject,
@@ -43,17 +47,7 @@ exports.createTransaction = (req, res, next) => {
     },
     keys: {
       proof : req.body.keys.proof,
-      jwk : {
-          keys: [ 
-              {
-                  kty: req.body.keys.jwk.keys.kty,
-                  e: req.body.keys.jwk.keys.e,
-                  kid: req.body.keys.jwk.keys.kid,
-                  alg: req.body.keys.jwk.keys.alg,
-                  n: req.body.keys.jwk.keys.n
-              } 
-          ]
-      },
+      jwk : req.body.keys.jwk
     }
   });
 
@@ -94,7 +88,8 @@ exports.createTransaction = (req, res, next) => {
 
 // GET the Response 
 exports.getResponse = (req, res, next) => {
-  txResponse.find()
+  txResponse
+    .find()
     .then(txResponse => {
       res
         .status(200)
@@ -211,9 +206,64 @@ exports.transactionContinue = (req, res, next) => {
     handle: req.body.handle,
     interact_ref: req.body.interact_ref
   });
-  txContinue.save()
-    .then(data => {
-      res.json(data);
+  txContinue
+    .save()
+    .then(() => {
+      // Issuing the Token
+      // Get the interact_handle given by the AS
+      const interact_handle = localStorage.getItem('interact_handle');
+      console.log('interact_handle', interact_handle)
+      // Create Token 
+      const user = { name: "UserName"}
+      const token = {
+        access_token: {
+          value: jwt.sign(user, process.env.ACCESS_TOKEN_SECRET),
+          type: "bearer"
+        }
+      }
+      // Get the server handle from DB 
+      txResponse.find({}, {
+        _id : 0,
+        handle: 1
+      })
+        .then(result => {
+          handle_server = result[result.length - 1].handle.value
+          console.log('handle_server', handle_server)
+          // Get the client handle and the interact_ref from DB 
+          txContinuation.find({}, {
+            _id : 0,
+            interact_ref: 1,
+            handle : 1
+          })
+            .then((data) => {
+              interact_ref = data[data.length - 1].interact_ref
+              handle_client = data[data.length - 1].handle
+              //handle_client = "hamidmassaoudyesichangedthatvalue"
+              console.log('interact_ref', interact_ref)
+              console.log('handle_client', handle_client)
+              if (interact_ref == interact_handle && handle_client == handle_server) {
+                console.log(true)
+                res.status(201).json({
+                  token: token
+                });
+              } else {
+                console.log(false)
+                res.sendStatus(404);
+              }
+            })
+            .catch(err => {
+              if (!err.statusCode) {
+                err.statusCode = 500;
+              }
+            next(err);
+          })
+        })
+        .catch(err => {
+          if (!err.statusCode) {
+            err.statusCode = 500;
+          }
+        next(err);
+      })
     })
     .catch(err => {
       res.json({
@@ -223,7 +273,7 @@ exports.transactionContinue = (req, res, next) => {
 }
 
 exports.getTransactionContinue = (req, res, next) => {
-   txContinuation.find()
+  txContinuation.find()
     .then(txContinue => {
       res
         .status(200)
@@ -239,63 +289,6 @@ exports.getTransactionContinue = (req, res, next) => {
       next(err);
     });
 }
-
-// Create Token 
-exports.createToken = (req, res, next) => {
-  const interact_handle = localStorage.getItem('interact_handle');
-  console.log('interact_handle', interact_handle)
-  // Create Token 
-  const user = { name: "UserName"}
-  const token = {
-    access_token: {
-      value: jwt.sign(user, process.env.ACCESS_TOKEN_SECRET),
-      type: "bearer"
-    }
-  }
-  // Get interact_ref from DB 
-  txResponse.find({}, {
-    _id : 0,
-    handle: 1
-  })
-    .then(result => {
-      handle_server = result[result.length - 1].handle.value
-      console.log('handle_server', handle_server)
-      // Get interact_handle from DB 
-      txContinuation.find({}, {
-        _id : 0,
-        interact_ref: 1,
-        handle : 1
-      })
-        .then((data) => {
-          interact_ref = data[data.length - 1].interact_ref
-          handle_client = data[data.length - 1].handle
-          //handle_client = "YesIchangedTheHandleValue"
-          console.log('interact_ref', interact_ref)
-          console.log('handle_client', handle_client)
-          if (interact_ref == interact_handle && handle_client == handle_server) {
-            console.log(true)
-            res.json({
-              token: token
-            });
-          } else {
-            console.log(false)
-            res.sendStatus(404);
-          }
-        })
-        .catch(err => {
-          if (!err.statusCode) {
-            err.statusCode = 500;
-          }
-          next(err);
-        })
-      })
-      .catch(err => {
-        if (!err.statusCode) {
-          err.statusCode = 500;
-        }
-        next(err);
-      })
-};
 
 // Get protected resource 
 exports.getProtectedData = (req, res, next) => {

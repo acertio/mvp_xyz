@@ -36,7 +36,7 @@ class CallbackPage extends Component {
         hash: values.hash
       })
     }
-    //this.tokenHandler();
+
   }
 
   componentDidMount = async () => {
@@ -46,7 +46,6 @@ class CallbackPage extends Component {
     //const expected_hash = "aff9b0886e41efcea643033195422b38258e1ae700b3544a33c59d27ec5a9d80dab1017f2f88ba93491d5ac4ad681f27a80811cf2c889c23e1e643ededb830a2"
     if (expected_hash === this.state.hash) {
       await this.txContinuehandler();
-      this.tokenHandler();
     }
     this.setState({
       expected_hash: expected_hash
@@ -68,24 +67,13 @@ class CallbackPage extends Component {
       })
     }).then(data => {
       return data.json()
-    })
-  }
-
-  tokenHandler = async () => {
-    let url = 'http://localhost:8080/as/token';
-    let method = 'POST'
-    await fetch(url, {
-      method: method,
-    }).then(token => {
-      return token.json()
-      // Use the data
     }).then(resultData => {
       this.setState({
         access_token: resultData.token.access_token.value
       })
     })
   }
-  
+
   render () {
     if (this.state.expected_hash === this.state.hash) {
       return (
