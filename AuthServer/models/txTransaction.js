@@ -22,17 +22,13 @@ const txTransactionSchema = new Schema({
         type: Object,
         //required: true
     },
-    claimsRequest: {
+    claims: {
         type: Object,
         //required: true
     },
-    resourceRequest: {
-        resources : {
-            type: Array
-        },
-        type: Object,
-        //required: true
-    }
+    resource: {
+        type: Array
+    },
 
 }, { timestamps: true });
 

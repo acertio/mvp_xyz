@@ -16,6 +16,7 @@ const sha3_512_encode = function (toHash) {
 
 // Create a Transaction 
 exports.createTransaction = (req, res, next) => {
+  console.log(req.body)
   const txtransaction = new txTransaction({
     display: {
       name: req.body.display.name,
@@ -28,29 +29,20 @@ exports.createTransaction = (req, res, next) => {
           nonce: req.body.interact.callback.nonce
       }
     },
-    resourceRequest : {
-      resources: [
-        {
-          action : req.body.resourceRequest.resources.action,
-          locations : req.body.resourceRequest.resources.locations,
-          data : req.body.resourceRequest.resources.data
-        }
-      ]
-    },
-    claimsRequest: {
-      subject: req.body.claimsRequest.subject,
-      email: req.body.claimsRequest.email
+    resources : req.body.resources,
+    claims: {
+      subject: req.body.claims.subject,
+      email: req.body.claims.email
     },
     user: {
-      handle: req.body.user.handle,
-      assertion: req.body.user.assertion
+      assertion: req.body.user.assertion,
+      type: req.body.user.type
     },
     keys: {
       proof : req.body.keys.proof,
       jwk : req.body.keys.jwk
     }
   });
-
   txtransaction
     .save()
     .then(() => {
