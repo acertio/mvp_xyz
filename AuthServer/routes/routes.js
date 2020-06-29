@@ -16,7 +16,7 @@ router.get('/transaction/:transactionId', authServerController.getTransaction);
 router.get('/interact/:id', authServerController.getInteractUrl);
 
 // GET the Response 
-router.get('/responsePosts', authServerController.getResponse);
+//router.get('/responsePosts', authServerController.getResponse);
 
 // Protected resources 
 router.get('/data', 
@@ -28,6 +28,8 @@ router.get('/data',
 router.post('/txContinue', authServerController.transactionContinue);
 
 // Get Transaction Continue 
-router.get('/txContinuePosts', authServerController.getTransactionContinue);
+//router.get('/txContinuePosts', authServerController.getTransactionContinue);
+
+router.post('/test', authServerController.postTest);
 
 module.exports = router;

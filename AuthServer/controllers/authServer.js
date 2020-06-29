@@ -1,7 +1,5 @@
 require('dotenv').config();
-const txTransaction = require('../models/txTransaction');
-const txContinuation = require('../models/txContinuation');
-const txResponse = require('../models/txResponse');
+const PendingTransactionModel = require('../models/pendingTransaction');
 const utils = require('../utils/utils');
 const base64url = require('base64url');
 const { sha3_512 }  = require('js-sha3');
@@ -16,32 +14,41 @@ const sha3_512_encode = function (toHash) {
 
 // Create a Transaction 
 exports.createTransaction = (req, res, next) => {
-  console.log(req.body)
-  const txtransaction = new txTransaction({
-    display: {
-      name: req.body.display.name,
-      uri: req.body.display.uri
-    },
-    interact: {
-      redirect: req.body.interact.redirect,
-      callback: {
-          uri: req.body.interact.callback.uri,
-          nonce: req.body.interact.callback.nonce
+  const txtransaction = new PendingTransactionModel({
+    entries: [{
+      request : {
+        display: {
+          name: req.body.display.name,
+          uri: req.body.display.uri
+        },
+        interact: {
+          redirect: req.body.interact.redirect,
+          callback: {
+              uri: req.body.interact.callback.uri,
+              nonce: req.body.interact.callback.nonce
+          }
+        },
+        resources : [
+          {
+            action : req.body.resources.action,
+            locations : req.body.resources.locations,
+            data : req.body.resources.data
+          }
+        ],
+        claims: {
+          subject: req.body.claims.subject,
+          email: req.body.claims.email
+        },
+        user: {
+          assertion: req.body.user.assertion,
+          type: req.body.user.type
+        },
+        keys: {
+          proof : req.body.keys.proof,
+          jwk : req.body.keys.jwk
+        }
       }
-    },
-    resources : req.body.resources,
-    claims: {
-      subject: req.body.claims.subject,
-      email: req.body.claims.email
-    },
-    user: {
-      assertion: req.body.user.assertion,
-      type: req.body.user.type
-    },
-    keys: {
-      proof : req.body.keys.proof,
-      jwk : req.body.keys.jwk
-    }
+    }]
   });
   txtransaction
     .save()
@@ -49,7 +56,7 @@ exports.createTransaction = (req, res, next) => {
       // Elements for the transaction Response 
       const interaction_url_id = utils.generateRandomString(20); // Save in DB
       const server_nonce = utils.generateRandomString(20); // Save in DB 
-      const response = new txResponse({
+      const response = ({
         interaction_url : "http://localhost:8080/as/interact/"  + interaction_url_id,
         server_nonce : server_nonce,
         handle : {
@@ -57,8 +64,27 @@ exports.createTransaction = (req, res, next) => {
           type : "bearer"
         }
       });
-      // Save the response in the DB 
-      response.save()
+      PendingTransactionModel.find({}, {
+        _id: 1
+      })
+      .then(result => {
+        PendingTransactionModel.updateOne(
+          {
+            _id: result[result.length - 1]._id
+          }, 
+          {
+            entries:[{
+              request: txtransaction.entries[0].request,
+              response: response
+            }],
+            client_nonce: req.body.interact.callback.nonce,
+            server_nonce: response.server_nonce,
+          },
+          function(err, res) {
+            if (err) throw err;
+          }
+        );
+      })
       // Add a Response to the transaction  
       res.status(201).json({
         interaction_url: response.interaction_url,
@@ -75,28 +101,6 @@ exports.createTransaction = (req, res, next) => {
       }
       next(err);
     });
-    
-}
-
-// GET the Response 
-exports.getResponse = (req, res, next) => {
-  txResponse
-    .find()
-    .then(txResponse => {
-      res
-        .status(200)
-        .json({ 
-          message: 'txReponse Posts', 
-          txResponsePosts: txResponse
-        });
-    })
-    .catch(err => {
-      if (!err.statusCode) {
-        err.statusCode = 500;
-      }
-      next(err);
-    });
-    
 }
 
 // Get all the Transactions 
@@ -145,62 +149,70 @@ exports.getInteractUrl = (req, res, next) => {
   const interact_handle = utils.generateRandomString(30);
   localStorage.setItem('interact_handle', interact_handle)
   // Get client_nonce + uri from the DataBase 
-  txTransaction.find({}, {
+  PendingTransactionModel.find({}, {
     _id : 0,
-    interact : 1
+    entries : 1
   })
     .then(result => {
-      client_nonce = result[result.length - 1].interact.callback.nonce
-      uri = result[result.length - 1].interact.callback.uri
-      // Get interact_handle + server_nonce from the DataBase 
-      txResponse.find({}, {
-        _id : 0,
-        server_nonce: 1
-      })
-        .then(data => {
-          server_nonce = data[data.length - 1].server_nonce
-          const hash = sha3_512_encode(
-            [client_nonce, server_nonce, interact_handle].join('\n')
-          )
-          const callback = uri; // This is the Url that I want to modify, we need to get it from DB 
-          const i =
-          callback + '?hash=' + hash + '&interact=' + interact_handle;
-          res.writeHeader(200, {"Content-Type": "text/html"});  
-          res.write(
-            '<head>' + 
-              '<title>XYZ Auth Server </title>' + 
-              '<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">' + 
-            '</head>' + 
-            '<body>' + 
-              '<div>' + 
-                  '<h2>XYZ Redirect Client</h2>' + 
-                  '<p><span>http://localhost:3000</span></p>' + 
-                  '<a id="CallbackUrl" href=' + i + '>' + 
-                    '<button type="button" class="btn btn-success">Approve</button>' + 
-                  '</a>' + 
-                  '<button type="button" class="btn btn-secondary">Deny</button>' +
-              '</div>' +
-                '<script type="text/javascript"' + 
-                  'function myFunction(req, res) {' + 
-                    //res.redirect(i) + 
-                  '}' + 
-                '</script>' + 
-            '</body>' 
-          );
-          res.end();
-          //res.sendFile(path.join(__dirname+'/interactPage.html'));
-        })
-      })
+      client_nonce = result[result.length - 1].entries[0].request.interact.callback.nonce
+      uri = result[result.length - 1].entries[0].request.interact.callback.uri
+      server_nonce = result[result.length - 1].entries[0].response.server_nonce
+      const hash = sha3_512_encode(
+        [client_nonce, server_nonce, interact_handle].join('\n')
+      )
+      const callback = uri; // This is the Url that I want to modify, we need to get it from DB 
+      const i =
+      callback + '?hash=' + hash + '&interact=' + interact_handle;
+      res.writeHeader(200, {"Content-Type": "text/html"});  
+      res.write(
+        '<head>' + 
+          '<title>XYZ Auth Server </title>' + 
+            '<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">' + 
+        '</head>' + 
+        '<body>' + 
+          '<div>' + 
+            '<h2>XYZ Redirect Client</h2>' + 
+            '<p><span>http://localhost:3000</span></p>' + 
+            '<a id="CallbackUrl" href=' + i + '>' + 
+              '<button type="button" class="btn btn-success">Approve</button>' + 
+            '</a>' + 
+            '<button type="button" class="btn btn-secondary">Deny</button>' +
+          '</div>' +
+            '<script type="text/javascript"' + 
+            '</script>' + 
+        '</body>' 
+      );
+      res.end();
+      //res.sendFile(path.join(__dirname+'/interactPage.html'));
+    })
 };
 
-exports.transactionContinue = (req, res, next) => {
-  const txContinue = new txContinuation({
-    handle: req.body.handle,
-    interact_ref: req.body.interact_ref
-  });
-  txContinue
-    .save()
-    .then(() => {
+exports.transactionContinue = async (req, res, next) => {
+  // Get the server handle from DB 
+  await PendingTransactionModel.find({}, {
+    _id : 1,
+    entries: 1,
+  })
+    .then(result => {
+      PendingTransactionModel.updateOne(
+        {
+          _id: result[result.length - 1]._id
+        }, 
+        {
+          $addToSet : {
+            entries: [{
+              txContinue: {
+                handle: req.body.handle,
+                interact_ref: req.body.interact_ref
+              }
+            }]
+          },
+        },
+        function(err, res) {
+          if (err) throw err;
+        }
+      )
+      .then(() => {
       // Issuing the Token
       // Get the interact_handle given by the AS
       const interact_handle = localStorage.getItem('interact_handle');
@@ -213,23 +225,16 @@ exports.transactionContinue = (req, res, next) => {
           type: "bearer"
         }
       }
-      // Get the server handle from DB 
-      txResponse.find({}, {
-        _id : 0,
-        handle: 1
-      })
-        .then(result => {
-          handle_server = result[result.length - 1].handle.value
+          handle_server = result[result.length - 1].entries[0].response.handle.value
           console.log('handle_server', handle_server)
           // Get the client handle and the interact_ref from DB 
-          txContinuation.find({}, {
+          PendingTransactionModel.find({}, {
             _id : 0,
-            interact_ref: 1,
-            handle : 1
+            entries: 1
           })
             .then((data) => {
-              interact_ref = data[data.length - 1].interact_ref
-              handle_client = data[data.length - 1].handle
+              interact_ref = data[data.length - 1].entries[1].txContinue.interact_ref
+              handle_client = data[data.length - 1].entries[1].txContinue.handle
               //handle_client = "hamidmassaoudyesichangedthatvalue"
               console.log('interact_ref', interact_ref)
               console.log('handle_client', handle_client)
@@ -299,4 +304,21 @@ exports.authenticateToken = (req, res, next) => {
     req.user = user
     next()
   })
+}
+
+exports.postTest = (req, res, next) => {
+  const test = ({
+    name: req.body.name,
+    age: req.body.age
+  })
+  if (req.body === test) {
+    res.json({
+      name: test.name,
+      age: test.age
+    })
+  } else {
+    res.json({
+      message: "This is Your other function"
+    })
+  }
 }
