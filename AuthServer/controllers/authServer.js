@@ -47,10 +47,6 @@ exports.createTransaction = (req, res, next) => {
           proof : req.body.keys.proof,
           jwk : req.body.keys.jwk
         }
-      },
-      txContinue: {
-        handle: req.body.handle,
-        interact_ref: req.body.interact_ref
       }
     }]
   }); 
