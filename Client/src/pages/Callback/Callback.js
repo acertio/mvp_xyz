@@ -54,7 +54,7 @@ class CallbackPage extends Component {
   }
 
   txContinuehandler = async () => {
-    let url = 'http://localhost:8080/as/transaction/continue';
+    let url = 'http://localhost:8080/as/transaction';
     let method = 'POST'
     await fetch(url, {
       method: method,

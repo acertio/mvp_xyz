@@ -19,7 +19,7 @@ router.get('/data',
 )
 
 // Transaction Continue 
-router.post('/transaction/continue', authServerController.transactionContinue);
+//router.post('/transaction/continue', authServerController.transactionContinue);
 
 // Get Transaction Continue 
 //router.get('/txContinuePosts', authServerController.getTransactionContinue);

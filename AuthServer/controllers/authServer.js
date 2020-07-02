@@ -14,6 +14,87 @@ const sha3_512_encode = function (toHash) {
 
 // Create a Transaction 
 exports.createTransaction = (req, res, next) => {
+  if (req.body.handle && req.body.interact_ref) {
+    // Get the server handle from DB 
+    PendingTransactionModel.find({}, {
+      _id : 1,
+      entries: 1,
+    })
+      .then(result => {
+        PendingTransactionModel.updateOne(
+          {
+            _id: result[result.length - 1]._id
+          }, 
+          {
+            $addToSet : {
+              entries: [{
+                txContinue: {
+                  handle: req.body.handle,
+                  interact_ref: req.body.interact_ref
+                }
+              }]
+            },
+          },
+          function(err, res) {
+            if (err) throw err;
+          }
+        )
+          .then(() => {
+            // Issuing the Token
+            // Get the interact_handle given by the AS
+            const interact_handle = localStorage.getItem('interact_handle');
+            console.log('interact_handle', interact_handle)
+            // Create Token 
+            const user = { name: "UserName"}
+            const token = {
+              access_token: {
+                value: jwt.sign(user, process.env.ACCESS_TOKEN_SECRET),
+                type: "bearer"
+              }
+            }
+            handle_server = result[result.length - 1].entries[0].response.handle.value
+            console.log('handle_server', handle_server)
+            // Get the client handle and the interact_ref from DB 
+            PendingTransactionModel.find({}, {
+            _id : 0,
+            entries: 1
+          })
+            .then((data) => {
+              interact_ref = data[data.length - 1].entries[1].txContinue.interact_ref
+              handle_client = data[data.length - 1].entries[1].txContinue.handle
+              //handle_client = "hamidmassaoudyesichangedthatvalue"
+              console.log('interact_ref', interact_ref)
+              console.log('handle_client', handle_client)
+              if (interact_ref == interact_handle && handle_client == handle_server) {
+                console.log(true)
+                res.status(201).json({
+                  token: token
+                });
+              } else {
+                console.log(false)
+                res.sendStatus(404);
+              }
+            })
+            .catch(err => {
+              if (!err.statusCode) {
+                err.statusCode = 500;
+              }
+            next(err);
+            })
+          })
+          .catch(err => {
+            if (!err.statusCode) {
+              err.statusCode = 500;
+            }
+            next(err);
+          })
+        })
+        .catch(err => {
+          res.json({
+          message: err
+        })
+      })
+  } else {
   const txtransaction = new PendingTransactionModel({
     entries: [{
       request : {
@@ -101,7 +182,7 @@ exports.createTransaction = (req, res, next) => {
       }
       next(err);
     });
-
+  }
 }
 
 // Get all the Transactions 
@@ -165,6 +246,7 @@ exports.getInteractUrl = (req, res, next) => {
     })
 };
 
+/*
 exports.transactionContinue = (req, res, next) => {
   // Get the server handle from DB 
   PendingTransactionModel.find({}, {
@@ -264,6 +346,7 @@ exports.getTransactionContinue = (req, res, next) => {
       next(err);
     });
 }
+*/
 
 // Get protected resource 
 exports.getProtectedData = (req, res, next) => {
@@ -283,4 +366,3 @@ exports.authenticateToken = (req, res, next) => {
     next()
   })
 }
-
