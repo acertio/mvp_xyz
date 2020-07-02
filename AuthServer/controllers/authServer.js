@@ -24,15 +24,15 @@ exports.createTransaction = (req, res, next) => {
         interact: {
           redirect: req.body.interact.redirect,
           callback: {
-              uri: req.body.interact.callback.uri,
-              nonce: req.body.interact.callback.nonce
+            uri: req.body.interact.callback.uri,
+            nonce: req.body.interact.callback.nonce
           }
         },
         resources : [
           {
-            action : req.body.resources.action,
-            locations : req.body.resources.locations,
-            data : req.body.resources.data
+            action : req.body.resources[0].action,
+            locations : req.body.resources[0].locations,
+            data : req.body.resources[0].data
           }
         ],
         claims: {
@@ -47,9 +47,13 @@ exports.createTransaction = (req, res, next) => {
           proof : req.body.keys.proof,
           jwk : req.body.keys.jwk
         }
+      },
+      txContinue: {
+        handle: req.body.handle,
+        interact_ref: req.body.interact_ref
       }
     }]
-  });
+  }); 
   txtransaction
     .save()
     .then(() => {
@@ -77,7 +81,7 @@ exports.createTransaction = (req, res, next) => {
               request: txtransaction.entries[0].request,
               response: response
             }],
-            client_nonce: req.body.interact.callback.nonce,
+            client_nonce: txtransaction.entries[0].request.interact.callback.nonce,
             server_nonce: response.server_nonce,
           },
           function(err, res) {
@@ -101,19 +105,17 @@ exports.createTransaction = (req, res, next) => {
       }
       next(err);
     });
+
 }
 
 // Get all the Transactions 
 exports.getTransactions = (req, res, next) => {
-  let totalItems;
-  txTransaction.find()
-    .then(posts => {
+  PendingTransactionModel.find()
+    .then(tx => {
       res
         .status(200)
         .json({ 
-          message: 'Fetched posts successfully.', 
-          posts: posts, 
-          totalItems: totalItems 
+          Transactions: tx
         });
     })
     .catch(err => {
@@ -123,26 +125,6 @@ exports.getTransactions = (req, res, next) => {
       next(err);
     });
 }
-
-// Get a transaction by Id 
-exports.getTransaction = (req, res, next) => {
-  const transactionId = req.params.transactionId;
-  txTransaction.findById(transactionId)
-    .then(post => {
-      if (!post) {
-        const error = new Error('Could not find transaction.');
-        error.statusCode = 404;
-        throw error;
-      }
-      res.status(200).json({ message: 'Transaction fetched.', post: post });
-    })
-    .catch(err => {
-      if (!err.statusCode) {
-        err.statusCode = 500;
-      }
-      next(err);
-    });
-};
 
 // Function to get the CallbackUrl + hash + handle  
 exports.getInteractUrl = (req, res, next) => {
@@ -187,9 +169,9 @@ exports.getInteractUrl = (req, res, next) => {
     })
 };
 
-exports.transactionContinue = async (req, res, next) => {
+exports.transactionContinue = (req, res, next) => {
   // Get the server handle from DB 
-  await PendingTransactionModel.find({}, {
+  PendingTransactionModel.find({}, {
     _id : 1,
     entries: 1,
   })
@@ -225,48 +207,48 @@ exports.transactionContinue = async (req, res, next) => {
           type: "bearer"
         }
       }
-          handle_server = result[result.length - 1].entries[0].response.handle.value
-          console.log('handle_server', handle_server)
-          // Get the client handle and the interact_ref from DB 
-          PendingTransactionModel.find({}, {
-            _id : 0,
-            entries: 1
+      handle_server = result[result.length - 1].entries[0].response.handle.value
+      console.log('handle_server', handle_server)
+      // Get the client handle and the interact_ref from DB 
+      PendingTransactionModel.find({}, {
+        _id : 0,
+        entries: 1
+      })
+        .then((data) => {
+          interact_ref = data[data.length - 1].entries[1].txContinue.interact_ref
+          handle_client = data[data.length - 1].entries[1].txContinue.handle
+          //handle_client = "hamidmassaoudyesichangedthatvalue"
+          console.log('interact_ref', interact_ref)
+          console.log('handle_client', handle_client)
+          if (interact_ref == interact_handle && handle_client == handle_server) {
+            console.log(true)
+            res.status(201).json({
+              token: token
+            });
+          } else {
+              console.log(false)
+              res.sendStatus(404);
+            }
           })
-            .then((data) => {
-              interact_ref = data[data.length - 1].entries[1].txContinue.interact_ref
-              handle_client = data[data.length - 1].entries[1].txContinue.handle
-              //handle_client = "hamidmassaoudyesichangedthatvalue"
-              console.log('interact_ref', interact_ref)
-              console.log('handle_client', handle_client)
-              if (interact_ref == interact_handle && handle_client == handle_server) {
-                console.log(true)
-                res.status(201).json({
-                  token: token
-                });
-              } else {
-                console.log(false)
-                res.sendStatus(404);
-              }
-            })
-            .catch(err => {
-              if (!err.statusCode) {
-                err.statusCode = 500;
-              }
-            next(err);
-          })
+          .catch(err => {
+            if (!err.statusCode) {
+              err.statusCode = 500;
+            }
+          next(err);
         })
-        .catch(err => {
-          if (!err.statusCode) {
-            err.statusCode = 500;
-          }
-        next(err);
       })
+      .catch(err => {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+      next(err);
     })
-    .catch(err => {
-      res.json({
-        message: err
-      })
+  })
+  .catch(err => {
+    res.json({
+      message: err
     })
+  })
 }
 
 exports.getTransactionContinue = (req, res, next) => {
@@ -306,19 +288,3 @@ exports.authenticateToken = (req, res, next) => {
   })
 }
 
-exports.postTest = (req, res, next) => {
-  const test = ({
-    name: req.body.name,
-    age: req.body.age
-  })
-  if (req.body === test) {
-    res.json({
-      name: test.name,
-      age: test.age
-    })
-  } else {
-    res.json({
-      message: "This is Your other function"
-    })
-  }
-}

@@ -9,14 +9,8 @@ router.get('/', authServerController.getTransactions);
 // POST /as/transaction
 router.post('/transaction', authServerController.createTransaction);
 
-// GET a transaction by Id 
-router.get('/transaction/:transactionId', authServerController.getTransaction);
-
 // Redirect user to AuthServer 
 router.get('/interact/:id', authServerController.getInteractUrl);
-
-// GET the Response 
-//router.get('/responsePosts', authServerController.getResponse);
 
 // Protected resources 
 router.get('/data', 
@@ -25,11 +19,9 @@ router.get('/data',
 )
 
 // Transaction Continue 
-router.post('/txContinue', authServerController.transactionContinue);
+router.post('/transaction/continue', authServerController.transactionContinue);
 
 // Get Transaction Continue 
 //router.get('/txContinuePosts', authServerController.getTransactionContinue);
-
-router.post('/test', authServerController.postTest);
 
 module.exports = router;
